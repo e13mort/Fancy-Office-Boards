@@ -2,15 +2,35 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
+    application
+    `maven-publish`
     alias(libs.plugins.sqldelight)
+}
+
+/* required for maven publication */
+group = "dev.pavel.dashboard"
+version = "0.1"
+
+val browserDist by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
 }
 
 kotlin {
     jvm {
         withJava()
-    }
-    js(IR) {
-        browser()
+        dependencies {
+            dependencies {
+                browserDist(
+                    project(
+                        mapOf(
+                            "path" to ":client:web",
+                            "configuration" to "browserDist"
+                        )
+                    )
+                )
+            }
+        }
     }
 
     sourceSets {
@@ -31,15 +51,9 @@ kotlin {
                 implementation(libs.ktor.server.netty)
             }
         }
-        val jsMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.js)
-            }
-        }
 
         /* Main hierarchy */
         jvmMain.dependsOn(commonMain)
-        jsMain.dependsOn(commonMain)
 
         /* Test source sets */
         val commonTest by getting {
@@ -48,10 +62,16 @@ kotlin {
             }
         }
         val jvmTest by getting
-        val jsTest by getting
 
         /* Test hierarchy */
         jvmTest.dependsOn(commonTest)
-        jsTest.dependsOn(commonTest)
     }
+}
+
+application {
+    mainClass.set("dev.pavel.dashboard.ApplicationKt")
+}
+
+tasks.withType<Copy>().named("jvmProcessResources") {
+    from(browserDist)
 }

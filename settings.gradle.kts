@@ -1,5 +1,5 @@
 rootProject.name = "Dashboard"
-include(":common")
+include(":common", ":client:web", ":backend")
 
 pluginManagement {
     repositories {
@@ -10,6 +10,7 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
     repositories {
         google()
         mavenCentral()
