@@ -35,6 +35,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.sqldelight.driver.jvm)
+                implementation(libs.ktor.server.netty)
             }
         }
         val jsMain by getting {
