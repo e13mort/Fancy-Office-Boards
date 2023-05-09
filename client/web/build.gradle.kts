@@ -16,7 +16,7 @@ kotlin {
         /* Main source sets */
         val commonMain by getting {
             dependencies {
-
+                implementation(project(":common"))
             }
         }
         val jsMain by getting {
