@@ -6,7 +6,12 @@ plugins {
 
 kotlin {
     js(IR) {
-        browser()
+        browser {
+            commonWebpackConfig {
+                cssSupport { enabled.set(true) }
+                scssSupport { enabled.set(true) }
+            }
+        }
         binaries.executable()
         nodejs()
     }
@@ -23,6 +28,8 @@ kotlin {
                 implementation(libs.ktor.client.js)
                 implementation(compose.runtime)
                 implementation(compose.web.core)
+                implementation(libs.kmdc)
+                implementation(libs.kmdcx)
             }
         }
         val jsTest by getting
