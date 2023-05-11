@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.desktop)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -21,6 +22,9 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":common"))
+                api(libs.kotlinx.serialization.json)
+                implementation(libs.premo.main)
+                implementation(libs.premo.navigation)
             }
         }
         val jsMain by getting {
