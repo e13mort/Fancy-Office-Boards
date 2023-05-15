@@ -1,6 +1,7 @@
 package dev.pavel.dashboard.admin
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import dev.petuska.kmdc.elevation.MDCElevation
 import dev.petuska.kmdc.fab.Label
 import dev.petuska.kmdc.fab.MDCFab
@@ -19,19 +20,25 @@ import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.marginRight
 import org.jetbrains.compose.web.css.px
 
+private const val COLUMNS = 2
+private const val MAX_COLUMNS = 12
 @Composable
 fun DashboardsPM.Render() {
     MDCLayoutGrid {
-        Cells {
-            repeat(2) { i ->
-                Cell(span = 6.toUInt()) {
-                    MDCElevation(z = 3, attrs = {
-                        style {
-                            alignItems(AlignItems.Center)
-                            justifyContent(JustifyContent.Center)
+        val state = dashboards().collectAsState().value
+        val rows = state.dashboards.windowed(COLUMNS, COLUMNS, true)
+        rows.forEach { row ->
+            Cells {
+                row.forEach { item: DashboardsPM.Dashboard ->
+                    Cell(span = (MAX_COLUMNS / COLUMNS).toUInt()) {
+                        MDCElevation(z = 3, attrs = {
+                            style {
+                                alignItems(AlignItems.Center)
+                                justifyContent(JustifyContent.Center)
+                            }
+                        }) {
+                            MDCBody1(item.name)
                         }
-                    }) {
-                        MDCBody1("Dashboard $i")
                     }
                 }
             }
@@ -46,6 +53,9 @@ fun DashboardsPM.Render() {
             }) {
                 MDCFab(type = MDCFabType.Extended, attrs = {
                     attr("aria-label", "Add")
+                    onClick {
+                        addNewDashboard()
+                    }
                 }) {
                     Label("Add")
                     MDCIcon(

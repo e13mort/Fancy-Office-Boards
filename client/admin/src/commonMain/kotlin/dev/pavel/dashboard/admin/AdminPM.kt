@@ -55,11 +55,6 @@ class DisplaysPM(params: PmParams) : PresentationModel(params) {
     object Description : PmDescription
 }
 
-class DashboardsPM(params: PmParams) : PresentationModel(params) {
-    @Serializable
-    object Description : PmDescription
-}
-
 object ShowDisplays : PmMessage
 
 object ShowDashboards : PmMessage
