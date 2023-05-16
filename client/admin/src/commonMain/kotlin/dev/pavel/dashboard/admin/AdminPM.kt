@@ -1,5 +1,8 @@
 package dev.pavel.dashboard.admin
 
+import dev.pavel.dashboard.entity.DashboardRepository
+import dev.pavel.dashboard.fakes.FakeDashboardsRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import me.dmdev.premo.PmDelegate
 import me.dmdev.premo.PmDescription
@@ -59,13 +62,15 @@ object ShowDisplays : PmMessage
 
 object ShowDashboards : PmMessage
 
-class AdminPMFactory : PmFactory {
+class AdminPMFactory(
+    private val repository: DashboardRepository
+) : PmFactory {
     override fun createPm(params: PmParams): PresentationModel {
         println("Create PM for ${params.tag} ${params.description}")
-        return when(val description = params.description) {
+        return when (val description = params.description) {
             is AdminMasterPM.Description -> AdminMasterPM(params)
             is DisplaysPM.Description -> DisplaysPM(params)
-            is DashboardsPM.Description -> DashboardsPM(params)
+            is DashboardsPM.Description -> DashboardsPM(params, repository, Dispatchers.Main)
             is AdminPM.Description -> AdminPM(params)
             else -> throw IllegalArgumentException("Not handled instance creation for pm description $description")
         }
@@ -78,7 +83,7 @@ object Admin {
             tag = "AdminPM",
             description = AdminPM.Description,
             parent = null,
-            factory = AdminPMFactory(),
+            factory = AdminPMFactory(FakeDashboardsRepository.create()),
             stateSaverFactory = { EmptyPMStateSaver }
         )
     )

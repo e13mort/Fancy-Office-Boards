@@ -8,10 +8,10 @@ typealias DashboardId = String
 interface Entities {
 
     sealed interface Dashboard {
-        fun name()
+        fun name(): String
     }
 
-    interface WebPagesDashboard {
+    interface WebPagesDashboard : Dashboard {
 
         fun targets(): List<String>
 
@@ -25,6 +25,8 @@ interface Entities {
 
 interface DashboardRepository {
     fun dashboardById(id: DashboardId): Flow<Entities.Dashboard>
+
+    suspend fun allDashboards(): List<Entities.Dashboard>
 
     class MissedDashboardException : Throwable()
 }

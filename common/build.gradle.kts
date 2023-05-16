@@ -17,8 +17,8 @@ kotlin {
         /* Main source sets */
         val commonMain by getting {
             dependencies {
-                implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.touchlab.kermit)
+                api(libs.kotlinx.coroutines.core)
+                api(libs.touchlab.kermit)
                 implementation(libs.ktor.client.core)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)

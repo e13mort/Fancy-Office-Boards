@@ -1,6 +1,7 @@
 package dev.pavel.dashboard.admin
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import dev.petuska.kmdc.elevation.MDCElevation
 import dev.petuska.kmdc.fab.Label
@@ -9,6 +10,7 @@ import dev.petuska.kmdc.fab.MDCFabType
 import dev.petuska.kmdc.layout.grid.Cell
 import dev.petuska.kmdc.layout.grid.Cells
 import dev.petuska.kmdc.layout.grid.MDCLayoutGrid
+import dev.petuska.kmdc.linear.progress.MDCLinearProgress
 import dev.petuska.kmdc.typography.MDCBody1
 import dev.petuska.kmdcx.icons.MDCIcon
 import dev.petuska.kmdcx.icons.MDCIconBase
@@ -24,8 +26,30 @@ private const val COLUMNS = 2
 private const val MAX_COLUMNS = 12
 @Composable
 fun DashboardsPM.Render() {
+    val pm = this
+    LaunchedEffect("Load") {
+        load()
+    }
+    when(val state = dashboards().collectAsState().value) {
+        is DashboardsPM.ItemsState -> ShowItems(state, pm)
+        DashboardsPM.LOADING -> ShowLoading()
+    }
+
+}
+
+@Composable
+fun ShowLoading() {
+    MDCLinearProgress {
+
+    }
+}
+
+@Composable
+private fun ShowItems(
+    state: DashboardsPM.ItemsState,
+    pm: DashboardsPM
+) {
     MDCLayoutGrid {
-        val state = dashboards().collectAsState().value
         val rows = state.dashboards.windowed(COLUMNS, COLUMNS, true)
         rows.forEach { row ->
             Cells {
@@ -54,7 +78,7 @@ fun DashboardsPM.Render() {
                 MDCFab(type = MDCFabType.Extended, attrs = {
                     attr("aria-label", "Add")
                     onClick {
-                        addNewDashboard()
+                        pm.addNewDashboard()
                     }
                 }) {
                     Label("Add")
@@ -68,5 +92,4 @@ fun DashboardsPM.Render() {
             }
         }
     }
-
 }
