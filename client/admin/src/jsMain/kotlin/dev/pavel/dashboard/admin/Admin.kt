@@ -3,6 +3,7 @@ package dev.pavel.dashboard.admin
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import dev.pavel.dashboard.admin.dashboards.DashboardsPM
 import org.jetbrains.compose.web.renderComposable
 
 fun main() {

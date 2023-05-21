@@ -1,5 +1,7 @@
 package dev.pavel.dashboard.admin
 
+import dev.pavel.dashboard.admin.dashboards.DashboardsPM
+import dev.pavel.dashboard.admin.dashboards.DashboardPM
 import dev.pavel.dashboard.entity.DashboardRepository
 import dev.pavel.dashboard.fakes.FakeDashboardsRepository
 import kotlinx.coroutines.Dispatchers
@@ -72,6 +74,7 @@ class AdminPMFactory(
             is DisplaysPM.Description -> DisplaysPM(params)
             is DashboardsPM.Description -> DashboardsPM(params, repository, Dispatchers.Main)
             is AdminPM.Description -> AdminPM(params)
+            is DashboardPM.Description -> DashboardPM(params)
             else -> throw IllegalArgumentException("Not handled instance creation for pm description $description")
         }
     }
