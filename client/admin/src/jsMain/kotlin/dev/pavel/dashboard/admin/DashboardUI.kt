@@ -1,15 +1,15 @@
 package dev.pavel.dashboard.admin
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import dev.pavel.dashboard.admin.dashboards.DashboardPM
 import dev.petuska.kmdc.button.Icon
 import dev.petuska.kmdc.button.Label
 import dev.petuska.kmdc.button.MDCButton
-import dev.petuska.kmdc.button.MDCButtonScope
 import dev.petuska.kmdc.elevation.MDCElevation
 import dev.petuska.kmdc.textfield.MDCTextField
 import dev.petuska.kmdc.textfield.MDCTextFieldType
@@ -35,52 +35,108 @@ fun DashboardPM.Render() {
             padding(8.px)
         }
     }) {
-        MDCBody1(name)
-        targets.forEachIndexed { index, link ->
-            Div(attrs = {
-                style {
-                    paddingBottom(4.px)
-                }
-            }) {
-                var text by remember { mutableStateOf(link) }
-                MDCTextField(
-                    text,
-                    type = MDCTextFieldType.Outlined,
-                    maxLength = 1024.toUInt(),
-                    label = "Link ${index + 1}",
-                    attrs = {
-                        onInput { inputEvent ->
-                            text = inputEvent.value
-                        }
-                    })
-            }
-        }
-        MDCButton(attrs = {
-            onClick {
-                handleClick()
+        val currentPMState = states.collectAsState().value
+        RenderTitle(currentPMState)
+        RenderLinks(currentPMState)
+        RenderButtons()
+    }
+}
+
+@Composable
+private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
+    targets.forEachIndexed { index, link ->
+        Div(attrs = {
+            style {
+                paddingBottom(4.px)
             }
         }) {
-            if (isNew()) {
-                NewDashboardActionButtonContent()
-            } else {
-                ExistingDashboardActionButtonContent()
+            val disabled = when (currentPMState) {
+                DashboardPM.State.View -> true
+                DashboardPM.State.Edit -> false
+            }
+            RenderLink(link, index, disabled)
+        }
+    }
+}
+
+@Composable
+private fun DashboardPM.RenderTitle(currentPMState: DashboardPM.State) {
+    Div(
+        attrs = {
+            style {
+                padding(4.px)
+            }
+        }
+    ) {
+        when (currentPMState) {
+            DashboardPM.State.View -> MDCBody1(name)
+            DashboardPM.State.Edit -> {
+                MDCTextField(
+                    value = name,
+                    label = "Title"
+                )
             }
         }
     }
 }
 
 @Composable
-private fun MDCButtonScope<*>.NewDashboardActionButtonContent() {
-    Icon(attrs = {
-        mdcIcon()
-    }) { Text(MDCIcon.Cancel.type) }
-    Label("Cancel")
+private fun RenderLink(link: String, index: Int, disabled: Boolean) {
+    var text by remember { mutableStateOf(link) }
+    MDCTextField(
+        text,
+        type = MDCTextFieldType.Outlined,
+        maxLength = 1024.toUInt(),
+        disabled = disabled,
+        label = "Link ${index + 1}",
+        attrs = {
+            onInput { inputEvent ->
+                text = inputEvent.value
+            }
+        })
 }
 
 @Composable
-private fun MDCButtonScope<*>.ExistingDashboardActionButtonContent() {
-    Icon(attrs = {
-        mdcIcon()
-    }) { Text(MDCIcon.Edit.type) }
-    Label("Edit")
+private fun DashboardPM.RenderButtons() {
+    when(states.value) {
+        DashboardPM.State.View -> {
+            RenderButton(Button.Edit)
+        }
+        DashboardPM.State.Edit -> {
+            if (isNew())
+                RenderButton(Button.Create)
+            else
+                RenderButton(Button.Save)
+            RenderButton(Button.Cancel)
+        }
+    }
+}
+
+@Composable
+private fun DashboardPM.RenderButton(button: Button) {
+    MDCButton(attrs = {
+        onClick {
+            when(button) {
+                Button.Cancel -> handleCancelClick()
+                Button.Edit -> handleActionClick()
+                Button.Save -> handleActionClick()
+                Button.Create -> handleActionClick()
+            }
+        }
+    }) {
+        Icon(attrs = {
+            mdcIcon()
+        }) { Text(button.iconType.type) }
+        Label(button.title)
+    }
+}
+
+private enum class Button(
+    val title: String,
+    val iconType: MDCIcon
+) {
+    Cancel("Cancel", MDCIcon.Cancel),
+    Edit("Edit", MDCIcon.Edit),
+    Save("Save", MDCIcon.Save),
+    Create("Create", MDCIcon.Create)
 }
