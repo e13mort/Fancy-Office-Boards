@@ -2,10 +2,6 @@ package dev.pavel.dashboard.admin
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import dev.pavel.dashboard.admin.dashboards.DashboardPM
 import dev.petuska.kmdc.button.Icon
 import dev.petuska.kmdc.button.Label
@@ -16,6 +12,7 @@ import dev.petuska.kmdc.textfield.MDCTextFieldType
 import dev.petuska.kmdc.typography.MDCBody1
 import dev.petuska.kmdcx.icons.MDCIcon
 import dev.petuska.kmdcx.icons.mdcIcon
+import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.AlignItems
 import org.jetbrains.compose.web.css.JustifyContent
 import org.jetbrains.compose.web.css.alignItems
@@ -44,6 +41,8 @@ fun DashboardPM.Render() {
 
 @Composable
 private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
+    val targets = targetsProp.collectAsState().value
+    println("Targets recomposition: $targets")
     targets.forEachIndexed { index, link ->
         Div(attrs = {
             style {
@@ -54,7 +53,12 @@ private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
                 DashboardPM.State.View -> true
                 DashboardPM.State.Edit -> false
             }
-            RenderLink(link, index, disabled)
+            RenderLink(link, index, disabled) {
+                if (!disabled) {
+                    RenderButton(LinkButton.Up, index, targets.size)
+                    RenderButton(LinkButton.Down, index, targets.size)
+                }
+            }
         }
     }
 }
@@ -81,46 +85,49 @@ private fun DashboardPM.RenderTitle(currentPMState: DashboardPM.State) {
 }
 
 @Composable
-private fun RenderLink(link: String, index: Int, disabled: Boolean) {
-    var text by remember { mutableStateOf(link) }
-    MDCTextField(
-        text,
+private fun DashboardPM.RenderLink(
+    link: String, index: Int, disabled: Boolean, trailingContent: @Composable () -> Unit
+) {
+    MDCTextField(link,
         type = MDCTextFieldType.Outlined,
         maxLength = 1024.toUInt(),
         disabled = disabled,
         label = "Link ${index + 1}",
         attrs = {
             onInput { inputEvent ->
-                text = inputEvent.value
+                updateLink(index, inputEvent.value)
             }
+        },
+        trailingIcon = {
+            trailingContent()
         })
 }
 
 @Composable
 private fun DashboardPM.RenderButtons() {
-    when(states.value) {
+    when (states.value) {
         DashboardPM.State.View -> {
-            RenderButton(Button.Edit)
+            RenderButton(CardButton.Edit)
         }
         DashboardPM.State.Edit -> {
             if (isNew())
-                RenderButton(Button.Create)
+                RenderButton(CardButton.Create)
             else
-                RenderButton(Button.Save)
-            RenderButton(Button.Cancel)
+                RenderButton(CardButton.Save)
+            RenderButton(CardButton.Cancel)
         }
     }
 }
 
 @Composable
-private fun DashboardPM.RenderButton(button: Button) {
+private fun DashboardPM.RenderButton(button: CardButton) {
     MDCButton(attrs = {
         onClick {
-            when(button) {
-                Button.Cancel -> handleCancelClick()
-                Button.Edit -> handleActionClick()
-                Button.Save -> handleActionClick()
-                Button.Create -> handleActionClick()
+            when (button) {
+                CardButton.Cancel -> handleCancelClick()
+                CardButton.Edit -> handleActionClick()
+                CardButton.Save -> handleActionClick()
+                CardButton.Create -> handleActionClick()
             }
         }
     }) {
@@ -131,12 +138,40 @@ private fun DashboardPM.RenderButton(button: Button) {
     }
 }
 
-private enum class Button(
+@Composable
+private fun DashboardPM.RenderButton(button: LinkButton, index: Int, totalSize: Int) {
+    MDCButton(attrs = {
+        if (index == 0 && button == LinkButton.Up)
+            disabled()
+        if (index == totalSize - 1 && button == LinkButton.Down)
+            disabled()
+        onClick {
+            when (button) {
+                LinkButton.Up -> moveLink(index, DashboardPM.Direction.Up)
+                LinkButton.Down -> moveLink(index, DashboardPM.Direction.Down)
+            }
+        }
+    }) {
+        Icon(attrs = {
+            mdcIcon()
+        }) { Text(button.iconType.type) }
+    }
+
+}
+
+private enum class CardButton(
     val title: String,
     val iconType: MDCIcon
 ) {
     Cancel("Cancel", MDCIcon.Cancel),
     Edit("Edit", MDCIcon.Edit),
     Save("Save", MDCIcon.Save),
-    Create("Create", MDCIcon.Create)
+    Create("Create", MDCIcon.Create),
+}
+
+private enum class LinkButton(
+    val iconType: MDCIcon
+) {
+    Up(MDCIcon.ArrowUpward),
+    Down(MDCIcon.ArrowDownward),
 }

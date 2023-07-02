@@ -24,13 +24,13 @@ class FakeDashboardsRepository(
         fun create() = FakeDashboardsRepository(
             listOf(
                 FakeWebDashboard(
-                    listOf("https://android.com", "https://google.com"), 10, "Dashboard 1"
+                    listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 1"
                 ),
                 FakeWebDashboard(
-                    listOf("https://android.com", "https://google.com"), 10, "Dashboard 2"
+                    listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 2"
                 )
             ),
-            delay = 2000
+            delay = 500
         )
 
     }

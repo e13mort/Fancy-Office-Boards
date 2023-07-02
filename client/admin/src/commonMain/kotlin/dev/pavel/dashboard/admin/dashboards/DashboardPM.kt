@@ -10,6 +10,7 @@ import me.dmdev.premo.PresentationModel
 class DashboardPM(private val params: PmParams) : PresentationModel(params) {
     val name = _description.name
     val targets = _description.targets.toMutableList()
+    val targetsProp = MutableStateFlow(targets.toList())
     val states = MutableStateFlow(
         when {
             isNew() -> State.Edit
@@ -42,6 +43,21 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
         }
     }
 
+    fun moveLink(index: Int, direction: Direction) {
+        val item = targets.removeAt(index)
+        val newIndex = when(direction) {
+            Direction.Up -> index - 1
+            Direction.Down -> index + 1
+        }.coerceAtLeast(0)
+        targets.add(newIndex, item)
+        targetsProp.value = targets.toList()
+    }
+
+    fun updateLink(index: Int, value: String) {
+        targets[index] = value
+        targetsProp.value = targets.toList()
+    }
+
     private fun cancel() {
         messageHandler.send(CancelMessage)
     }
@@ -50,6 +66,10 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
 
     enum class State {
         View, Edit
+    }
+
+    enum class Direction {
+        Up, Down
     }
 
     @Serializable
