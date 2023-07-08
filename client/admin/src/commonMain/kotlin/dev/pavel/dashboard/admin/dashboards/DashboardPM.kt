@@ -8,9 +8,9 @@ import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
 
 class DashboardPM(private val params: PmParams) : PresentationModel(params) {
+    private val targets = _description.targets.toMutableList()
     val name = _description.name
-    val targets = _description.targets.toMutableList()
-    val targetsProp = MutableStateFlow(targets.toList())
+    val targetsProp = MutableStateFlow(targets.toStates())
     val states = MutableStateFlow(
         when {
             isNew() -> State.Edit
@@ -27,6 +27,7 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
         if (isNew()) {
             cancel()
         } else {
+            targetsProp.value = targets.toStates()
             states.value = State.View
         }
     }
@@ -43,28 +44,42 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
         }
     }
 
-    fun moveLink(index: Int, direction: Direction) {
-        val item = targets.removeAt(index)
-        val newIndex = when(direction) {
-            Direction.Up -> index - 1
-            Direction.Down -> index + 1
+    private fun moveLink(index: Int, up: Boolean): List<TargetState> {
+        val activeTargets = targetsProp.value.toMutableList()
+        val item = activeTargets.removeAt(index)
+        val newIndex = if (up) {
+            index - 1
+        } else {
+            index + 1
         }.coerceAtLeast(0)
-        targets.add(newIndex, item)
-        targetsProp.value = targets.toList()
-    }
-
-    fun removeLink(index: Int) {
-        targets.removeAt(index)
-        targetsProp.value = targets.toList()
-    }
-
-    fun updateLink(index: Int, value: String) {
-        targets[index] = value
-        targetsProp.value = targets.toList()
+        activeTargets.add(newIndex, item)
+        return activeTargets
     }
 
     private fun cancel() {
         messageHandler.send(CancelMessage)
+    }
+
+    private fun List<String>.toStates(): List<TargetState> {
+        return this.mapIndexed { index: Int, s: String ->
+            TargetState(s, index == 0, index == size - 1, { action ->
+                val updatedTargets = when (action) {
+                    TargetAction.Up -> moveLink(index, true)
+                    TargetAction.Down -> moveLink(index, false)
+                    TargetAction.Remove -> {
+                        targetsProp.value.toMutableList().apply {
+                            removeAt(index)
+                        }
+                    }
+                }
+                targetsProp.value = updatedTargets
+            }) { updatedTarget ->
+                val updatedTargets = targetsProp.value.toMutableList()
+                updatedTargets[index] = updatedTargets[index].copy(target = updatedTarget)
+                targetsProp.value = updatedTargets
+                updatedTarget
+            }
+        }
     }
 
     object CancelMessage : PmMessage
@@ -73,9 +88,17 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
         View, Edit
     }
 
-    enum class Direction {
-        Up, Down
+    enum class TargetAction {
+        Up, Down, Remove
     }
+
+    data class TargetState(
+        val target: String,
+        val upEnabled: Boolean,
+        val downEnabled: Boolean,
+        val actionCallback: (TargetAction) -> Unit,
+        val updateContentCallback: (String) -> String
+    )
 
     @Serializable
     data class Description(

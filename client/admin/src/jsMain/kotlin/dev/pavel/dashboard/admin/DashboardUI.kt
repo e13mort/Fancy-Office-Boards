@@ -42,7 +42,6 @@ fun DashboardPM.Render() {
 @Composable
 private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
     val targets = targetsProp.collectAsState().value
-    println("Targets recomposition: $targets")
     targets.forEachIndexed { index, link ->
         Div(attrs = {
             style {
@@ -56,14 +55,20 @@ private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
             RenderLink(link, index, disabled) {
                 if (!disabled) {
                     RenderButton(
-                        LinkButton.Up, index, index == 0
-                    )
+                        LinkButton.Up, link.upEnabled
+                    ) {
+                        link.actionCallback(DashboardPM.TargetAction.Up)
+                    }
                     RenderButton(
-                        LinkButton.Down, index, index == targets.size - 1
-                    )
+                        LinkButton.Down, link.downEnabled
+                    ) {
+                        link.actionCallback(DashboardPM.TargetAction.Down)
+                    }
                     RenderButton(
-                        LinkButton.Remove, index, false
-                    )
+                        LinkButton.Remove, false
+                    ) {
+                        link.actionCallback(DashboardPM.TargetAction.Remove)
+                    }
                 }
             }
         }
@@ -92,17 +97,20 @@ private fun DashboardPM.RenderTitle(currentPMState: DashboardPM.State) {
 }
 
 @Composable
-private fun DashboardPM.RenderLink(
-    link: String, index: Int, disabled: Boolean, trailingContent: @Composable () -> Unit
+private fun RenderLink(
+    link: DashboardPM.TargetState,
+    index: Int,
+    disabled: Boolean,
+    trailingContent: @Composable () -> Unit
 ) {
-    MDCTextField(link,
+    MDCTextField(link.target,
         type = MDCTextFieldType.Outlined,
         maxLength = 1024.toUInt(),
         disabled = disabled,
         label = "Link ${index + 1}",
         attrs = {
             onInput { inputEvent ->
-                updateLink(index, inputEvent.value)
+                link.updateContentCallback(inputEvent.value)
             }
         },
         trailingIcon = {
@@ -146,17 +154,13 @@ private fun DashboardPM.RenderButton(button: CardButton) {
 }
 
 @Composable
-private fun DashboardPM.RenderButton(
-    button: LinkButton, index: Int, disabled: Boolean
+private fun RenderButton(
+    button: LinkButton, disabled: Boolean, callBack: () -> Unit
 ) {
     MDCButton(attrs = {
         if (disabled) disabled()
         onClick {
-            when (button) {
-                LinkButton.Up -> moveLink(index, DashboardPM.Direction.Up)
-                LinkButton.Down -> moveLink(index, DashboardPM.Direction.Down)
-                LinkButton.Remove -> removeLink(index)
-            }
+            callBack()
         }
     }) {
         Icon(attrs = {
