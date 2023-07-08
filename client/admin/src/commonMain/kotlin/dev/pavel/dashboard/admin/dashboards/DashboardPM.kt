@@ -53,6 +53,11 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
         targetsProp.value = targets.toList()
     }
 
+    fun removeLink(index: Int) {
+        targets.removeAt(index)
+        targetsProp.value = targets.toList()
+    }
+
     fun updateLink(index: Int, value: String) {
         targets[index] = value
         targetsProp.value = targets.toList()

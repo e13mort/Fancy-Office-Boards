@@ -55,8 +55,15 @@ private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
             }
             RenderLink(link, index, disabled) {
                 if (!disabled) {
-                    RenderButton(LinkButton.Up, index, targets.size)
-                    RenderButton(LinkButton.Down, index, targets.size)
+                    RenderButton(
+                        LinkButton.Up, index, index == 0
+                    )
+                    RenderButton(
+                        LinkButton.Down, index, index == targets.size - 1
+                    )
+                    RenderButton(
+                        LinkButton.Remove, index, false
+                    )
                 }
             }
         }
@@ -139,16 +146,16 @@ private fun DashboardPM.RenderButton(button: CardButton) {
 }
 
 @Composable
-private fun DashboardPM.RenderButton(button: LinkButton, index: Int, totalSize: Int) {
+private fun DashboardPM.RenderButton(
+    button: LinkButton, index: Int, disabled: Boolean
+) {
     MDCButton(attrs = {
-        if (index == 0 && button == LinkButton.Up)
-            disabled()
-        if (index == totalSize - 1 && button == LinkButton.Down)
-            disabled()
+        if (disabled) disabled()
         onClick {
             when (button) {
                 LinkButton.Up -> moveLink(index, DashboardPM.Direction.Up)
                 LinkButton.Down -> moveLink(index, DashboardPM.Direction.Down)
+                LinkButton.Remove -> removeLink(index)
             }
         }
     }) {
@@ -174,4 +181,5 @@ private enum class LinkButton(
 ) {
     Up(MDCIcon.ArrowUpward),
     Down(MDCIcon.ArrowDownward),
+    Remove(MDCIcon.Remove),
 }
