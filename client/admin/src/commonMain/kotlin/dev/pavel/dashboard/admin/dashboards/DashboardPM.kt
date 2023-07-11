@@ -1,15 +1,23 @@
 package dev.pavel.dashboard.admin.dashboards
 
+import dev.pavel.dashboard.interactors.CreateDashboardInteractor
+import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmMessage
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
 
-class DashboardPM(private val params: PmParams) : PresentationModel(params) {
+class DashboardPM(
+    private val params: PmParams,
+    private val updateDashboardInteractor: UpdateDashboardInteractor,
+    private val createDashboardInteractor: CreateDashboardInteractor
+) : PresentationModel(params) {
     private val targets = _description.targets.toMutableList()
     val name = _description.name
+    private val id = _description.id
     val targetsProp = MutableStateFlow(targets.toStates())
     val states = MutableStateFlow(
         when {
@@ -38,9 +46,33 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
                 states.value = State.Edit
             }
             State.Edit -> {
-                //launch updating
-                states.value = State.View
+                updateDashboard()
             }
+
+            State.Saving -> { /*nothing to do*/
+            }
+        }
+    }
+
+    private fun updateDashboard() {
+        scope.launch {
+            states.value = State.Saving
+            try {
+                val dashboard =
+                    if (id != null) {
+                        updateDashboardInteractor.updateDashboard(
+                            id,
+                            targetsProp.value.toTargets(),
+                            name
+                        )
+                    } else {
+                        createDashboardInteractor.createDashboard(targets, name)
+                    }
+                targetsProp.value = dashboard.targets().toStates()
+            } catch (e: Exception) {
+                //todo: show error
+            }
+            states.value = State.View
         }
     }
 
@@ -82,10 +114,16 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
         }
     }
 
+    private fun List<TargetState>.toTargets(): List<String> {
+        return map { targetState ->
+            targetState.target
+        }
+    }
+
     object CancelMessage : PmMessage
 
     enum class State {
-        View, Edit
+        View, Edit, Saving
     }
 
     enum class TargetAction {
@@ -102,6 +140,7 @@ class DashboardPM(private val params: PmParams) : PresentationModel(params) {
 
     @Serializable
     data class Description(
+        val id: String? = null,
         val name: String = "",
         val targets: List<String> = emptyList(),
         val type: Type = Type.NEW

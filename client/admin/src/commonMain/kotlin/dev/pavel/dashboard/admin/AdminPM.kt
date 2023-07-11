@@ -1,10 +1,10 @@
 package dev.pavel.dashboard.admin
 
-import dev.pavel.dashboard.admin.dashboards.DashboardsPM
 import dev.pavel.dashboard.admin.dashboards.DashboardPM
-import dev.pavel.dashboard.entity.DashboardRepository
-import dev.pavel.dashboard.fakes.FakeDashboardsRepository
-import kotlinx.coroutines.Dispatchers
+import dev.pavel.dashboard.admin.dashboards.DashboardsPM
+import dev.pavel.dashboard.interactors.CreateDashboardInteractor
+import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
+import dev.pavel.dashboard.interactors.WebPagesDashboardInteractor
 import kotlinx.serialization.Serializable
 import me.dmdev.premo.PmDelegate
 import me.dmdev.premo.PmDescription
@@ -65,31 +65,48 @@ object ShowDisplays : PmMessage
 object ShowDashboards : PmMessage
 
 class AdminPMFactory(
-    private val repository: DashboardRepository
+    private val dependencies: Admin.Dependencies
 ) : PmFactory {
     override fun createPm(params: PmParams): PresentationModel {
         println("Create PM for ${params.tag} ${params.description}")
         return when (val description = params.description) {
             is AdminMasterPM.Description -> AdminMasterPM(params)
             is DisplaysPM.Description -> DisplaysPM(params)
-            is DashboardsPM.Description -> DashboardsPM(params, repository, Dispatchers.Main)
+            is DashboardsPM.Description -> DashboardsPM(
+                params,
+                dependencies.pagesDashboardInteractor
+            )
             is AdminPM.Description -> AdminPM(params)
-            is DashboardPM.Description -> DashboardPM(params)
+            is DashboardPM.Description -> DashboardPM(
+                params,
+                dependencies.updateDashboardInteractor,
+                dependencies.createDashboardInteractor
+            )
             else -> throw IllegalArgumentException("Not handled instance creation for pm description $description")
         }
     }
+
 }
 
 object Admin {
-    fun createPMDelegate() : PmDelegate<AdminPM> = PmDelegate(
-        pmParams = PmParams(
-            tag = "AdminPM",
-            description = AdminPM.Description,
-            parent = null,
-            factory = AdminPMFactory(FakeDashboardsRepository.create()),
-            stateSaverFactory = { EmptyPMStateSaver }
-        )
+    class Dependencies(
+        val pagesDashboardInteractor: WebPagesDashboardInteractor,
+        val updateDashboardInteractor: UpdateDashboardInteractor,
+        val createDashboardInteractor: CreateDashboardInteractor
     )
+    fun createPMDelegate(dependencies: Dependencies) : PmDelegate<AdminPM> {
+        return PmDelegate(
+            pmParams = PmParams(
+                tag = "AdminPM",
+                description = AdminPM.Description,
+                parent = null,
+                factory = AdminPMFactory(
+                    dependencies
+                ),
+                stateSaverFactory = { EmptyPMStateSaver }
+            )
+        )
+    }
 }
 
 object EmptyPMStateSaver : PmStateSaver {

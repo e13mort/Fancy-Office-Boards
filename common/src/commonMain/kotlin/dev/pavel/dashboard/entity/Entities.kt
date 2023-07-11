@@ -9,6 +9,8 @@ interface Entities {
 
     sealed interface Dashboard {
         fun name(): String
+
+        fun id(): DashboardId
     }
 
     interface WebPagesDashboard : Dashboard {
@@ -23,14 +25,24 @@ interface Entities {
     }
 }
 
-interface DashboardRepository {
-    fun dashboardById(id: DashboardId): Flow<Entities.Dashboard>
+interface DashboardRepository<T : Entities.Dashboard> {
+    fun observeDashboardById(id: DashboardId): Flow<T>
 
-    suspend fun allDashboards(): List<Entities.Dashboard>
+    suspend fun findDashboardById(id: DashboardId): T?
+
+    suspend fun allDashboards(): List<T>
 
     class MissedDashboardException : Throwable()
 }
 
+interface WebPagesDashboardRepository : DashboardRepository<Entities.WebPagesDashboard> {
+    suspend fun updateDashboard(id: DashboardId, targets: List<String>, name: String)
+
+    suspend fun createDashboard(targets: List<String>, name: String): DashboardId
+}
+
 interface DisplayRepository {
-    fun dashBoardIdForDisplay(id: DisplayId): DashboardId?
+    fun dashboardIdForDisplay(id: DisplayId): DashboardId?
+
+    fun saveDashboardForDisplay(displayId: DisplayId, dashboardId: DashboardId)
 }

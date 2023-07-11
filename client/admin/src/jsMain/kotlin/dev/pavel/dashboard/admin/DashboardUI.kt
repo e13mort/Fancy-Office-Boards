@@ -7,6 +7,7 @@ import dev.petuska.kmdc.button.Icon
 import dev.petuska.kmdc.button.Label
 import dev.petuska.kmdc.button.MDCButton
 import dev.petuska.kmdc.elevation.MDCElevation
+import dev.petuska.kmdc.linear.progress.MDCLinearProgress
 import dev.petuska.kmdc.textfield.MDCTextField
 import dev.petuska.kmdc.textfield.MDCTextFieldType
 import dev.petuska.kmdc.typography.MDCBody1
@@ -33,6 +34,9 @@ fun DashboardPM.Render() {
         }
     }) {
         val currentPMState = states.collectAsState().value
+        if (currentPMState == DashboardPM.State.Saving) {
+            RenderUpdatingLoader()
+        }
         RenderTitle(currentPMState)
         RenderLinks(currentPMState)
         RenderButtons()
@@ -51,6 +55,7 @@ private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
             val disabled = when (currentPMState) {
                 DashboardPM.State.View -> true
                 DashboardPM.State.Edit -> false
+                DashboardPM.State.Saving -> true //? should render disabled buttons
             }
             RenderLink(link, index, disabled) {
                 if (!disabled) {
@@ -86,6 +91,7 @@ private fun DashboardPM.RenderTitle(currentPMState: DashboardPM.State) {
     ) {
         when (currentPMState) {
             DashboardPM.State.View -> MDCBody1(name)
+            DashboardPM.State.Saving -> MDCBody1(name)
             DashboardPM.State.Edit -> {
                 MDCTextField(
                     value = name,
@@ -131,18 +137,26 @@ private fun DashboardPM.RenderButtons() {
                 RenderButton(CardButton.Save)
             RenderButton(CardButton.Cancel)
         }
+
+        DashboardPM.State.Saving -> {
+            RenderButton(CardButton.Updating, true)
+        }
     }
 }
 
 @Composable
-private fun DashboardPM.RenderButton(button: CardButton) {
+private fun DashboardPM.RenderButton(button: CardButton, disabled: Boolean = false) {
     MDCButton(attrs = {
+        if (disabled) {
+            disabled()
+        }
         onClick {
             when (button) {
                 CardButton.Cancel -> handleCancelClick()
                 CardButton.Edit -> handleActionClick()
                 CardButton.Save -> handleActionClick()
                 CardButton.Create -> handleActionClick()
+                CardButton.Updating -> {  }
             }
         }
     }) {
@@ -170,6 +184,13 @@ private fun RenderButton(
 
 }
 
+@Composable
+private fun RenderUpdatingLoader() {
+    MDCLinearProgress {
+
+    }
+}
+
 private enum class CardButton(
     val title: String,
     val iconType: MDCIcon
@@ -178,6 +199,7 @@ private enum class CardButton(
     Edit("Edit", MDCIcon.Edit),
     Save("Save", MDCIcon.Save),
     Create("Create", MDCIcon.Create),
+    Updating("Saving...", MDCIcon.Create),
 }
 
 private enum class LinkButton(

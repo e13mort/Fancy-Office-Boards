@@ -1,21 +1,17 @@
 package dev.pavel.dashboard.admin.dashboards
 
-import dev.pavel.dashboard.entity.DashboardRepository
 import dev.pavel.dashboard.entity.Entities
-import kotlinx.coroutines.async
+import dev.pavel.dashboard.interactors.WebPagesDashboardInteractor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
-import kotlin.coroutines.CoroutineContext
 
 class DashboardsPM(
     params: PmParams,
-    private val repository: DashboardRepository,
-    private val networkContext: CoroutineContext
+    private val webPagesDashboardInteractor: WebPagesDashboardInteractor
 ) : PresentationModel(params) {
     @Serializable
     object Description : PmDescription
@@ -67,9 +63,7 @@ class DashboardsPM(
     suspend fun load() {
         detachItems()
         _flow.value = LOADING
-        val items = withContext(networkContext) {
-            async { repository.allDashboards() }
-        }.await()
+        val items = webPagesDashboardInteractor.allDashboards()
         _flow.value = ItemsState(dashboards = wrapAndAttachChildren(items))
     }
 
@@ -77,7 +71,7 @@ class DashboardsPM(
         return items.map {
             when (it) {
                 is Entities.WebPagesDashboard -> {
-                    Child<DashboardPM>(DashboardPM.Description(it.name(), it.targets(), DashboardPM.Description.Type.EXISTING)).also { pm ->
+                    Child<DashboardPM>(DashboardPM.Description(it.id(), it.name(), it.targets(), DashboardPM.Description.Type.EXISTING)).also { pm ->
                         attachChild(pm)
                     }
                 }
