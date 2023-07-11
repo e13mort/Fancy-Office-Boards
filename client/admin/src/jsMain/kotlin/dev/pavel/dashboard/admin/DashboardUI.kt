@@ -45,7 +45,7 @@ fun DashboardPM.Render() {
 
 @Composable
 private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
-    val targets = targetsProp.collectAsState().value
+    val targets = targets.collectAsState().value
     targets.forEachIndexed { index, link ->
         Div(attrs = {
             style {
@@ -90,12 +90,18 @@ private fun DashboardPM.RenderTitle(currentPMState: DashboardPM.State) {
         }
     ) {
         when (currentPMState) {
-            DashboardPM.State.View -> MDCBody1(name)
-            DashboardPM.State.Saving -> MDCBody1(name)
+            DashboardPM.State.View -> MDCBody1(name.value)
+            DashboardPM.State.Saving -> MDCBody1(name.value)
             DashboardPM.State.Edit -> {
+                val currentNameValue = name.collectAsState().value
                 MDCTextField(
-                    value = name,
-                    label = "Title"
+                    value = currentNameValue,
+                    label = "Title",
+                    attrs = {
+                        onInput { syntheticInputEvent ->
+                            name.value = syntheticInputEvent.value
+                        }
+                    }
                 )
             }
         }

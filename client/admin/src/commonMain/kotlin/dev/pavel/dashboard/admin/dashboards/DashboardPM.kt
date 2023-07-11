@@ -1,5 +1,6 @@
 package dev.pavel.dashboard.admin.dashboards
 
+import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,10 +16,9 @@ class DashboardPM(
     private val updateDashboardInteractor: UpdateDashboardInteractor,
     private val createDashboardInteractor: CreateDashboardInteractor
 ) : PresentationModel(params) {
-    private val targets = _description.targets.toMutableList()
-    val name = _description.name
     private val id = _description.id
-    val targetsProp = MutableStateFlow(targets.toStates())
+    val name = MutableStateFlow(_description.name)
+    val targets = MutableStateFlow(_description.targets.toMutableList().toStates())
     val states = MutableStateFlow(
         when {
             isNew() -> State.Edit
@@ -35,7 +35,7 @@ class DashboardPM(
         if (isNew()) {
             cancel()
         } else {
-            targetsProp.value = targets.toStates()
+            restoreData()
             states.value = State.View
         }
     }
@@ -62,13 +62,13 @@ class DashboardPM(
                     if (id != null) {
                         updateDashboardInteractor.updateDashboard(
                             id,
-                            targetsProp.value.toTargets(),
-                            name
+                            targets.value.toTargets(),
+                            name.value
                         )
                     } else {
-                        createDashboardInteractor.createDashboard(targets, name)
+                        createDashboardInteractor.createDashboard(targets.value.toTargets(), name.value)
                     }
-                targetsProp.value = dashboard.targets().toStates()
+                updateData(dashboard)
             } catch (e: Exception) {
                 //todo: show error
             }
@@ -76,8 +76,18 @@ class DashboardPM(
         }
     }
 
+    private fun updateData(dashboard: Entities.WebPagesDashboard) {
+        targets.value = dashboard.targets().toStates()
+        name.value = dashboard.name()
+    }
+
+    private fun restoreData() {
+        targets.value = _description.targets.toStates()
+        name.value = _description.name
+    }
+
     private fun moveLink(index: Int, up: Boolean): List<TargetState> {
-        val activeTargets = targetsProp.value.toMutableList()
+        val activeTargets = targets.value.toMutableList()
         val item = activeTargets.removeAt(index)
         val newIndex = if (up) {
             index - 1
@@ -99,16 +109,16 @@ class DashboardPM(
                     TargetAction.Up -> moveLink(index, true)
                     TargetAction.Down -> moveLink(index, false)
                     TargetAction.Remove -> {
-                        targetsProp.value.toMutableList().apply {
+                        targets.value.toMutableList().apply {
                             removeAt(index)
                         }
                     }
                 }
-                targetsProp.value = updatedTargets
+                targets.value = updatedTargets
             }) { updatedTarget ->
-                val updatedTargets = targetsProp.value.toMutableList()
+                val updatedTargets = targets.value.toMutableList()
                 updatedTargets[index] = updatedTargets[index].copy(target = updatedTarget)
-                targetsProp.value = updatedTargets
+                targets.value = updatedTargets
                 updatedTarget
             }
         }
