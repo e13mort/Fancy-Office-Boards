@@ -79,6 +79,17 @@ private fun DashboardPM.State.RenderLinks() {
             }
         }
     }
+    val addEnabled = when(state) {
+        is DashboardPM.State.Edit -> true
+        else -> false
+    }
+    if (addEnabled) {
+        Div {
+            RenderButton(CardButton.Add, !addEnabled) {
+                targets.add()
+            }
+        }
+    }
 }
 
 @Composable
@@ -203,6 +214,7 @@ private enum class CardButton(
     Save("Save", MDCIcon.Save),
     Create("Create", MDCIcon.Create),
     Updating("Saving...", MDCIcon.Create),
+    Add("Add", MDCIcon.Add),
 }
 
 private enum class LinkButton(

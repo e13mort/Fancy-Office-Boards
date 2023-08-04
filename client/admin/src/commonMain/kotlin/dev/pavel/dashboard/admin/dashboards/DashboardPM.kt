@@ -174,11 +174,14 @@ class DashboardPM(
         val states: StateFlow<List<TargetState>>
         fun handleAction(index: Int, action: TargetAction)
 
+        fun add()
+
         companion object : Targets {
             override val states: StateFlow<List<TargetState>>
                 get() = MutableStateFlow(emptyList())
 
             override fun handleAction(index: Int, action: TargetAction) = Unit
+            override fun add() = Unit
 
         }
     }
@@ -198,6 +201,13 @@ class DashboardPM(
                 TargetAction.Down -> moveLink(index, false)
                 TargetAction.Remove -> removeLinkAt(index)
             }
+        }
+
+        override fun add() {
+            states.value = states.value.toMutableList().apply {
+                this += TargetStateImpl(StringProperty(""))
+                updateButtons()
+            }.toList()
         }
 
         private fun moveLink(index: Int, up: Boolean) {
