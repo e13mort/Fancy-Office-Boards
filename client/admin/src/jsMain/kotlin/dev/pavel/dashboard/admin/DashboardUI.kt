@@ -221,6 +221,8 @@ private enum class LinkButton(
     val iconType: MDCIcon
 ) {
     Up(MDCIcon.ArrowUpward),
+
+
     Down(MDCIcon.ArrowDownward),
     Remove(MDCIcon.Remove),
 }
