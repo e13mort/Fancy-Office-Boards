@@ -40,6 +40,7 @@ kmdc = "dev.petuska:kmdc:0.1.0"
 kmdcx = "dev.petuska:kmdcx:0.1.0"
 premo-main = { module = "me.dmdev.premo:premo", version.ref = "premo" }
 premo-navigation = { module = "me.dmdev.premo:premo-navigation", version.ref = "premo" }
+turbine = "app.cash.turbine:turbine:1.0.0"
 
 [plugins]
 

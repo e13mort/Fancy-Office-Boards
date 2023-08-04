@@ -1,162 +1,259 @@
 package dev.pavel.dashboard.admin.dashboards
 
+import dev.pavel.dashboard.entity.DashboardId
 import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmMessage
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
 
 class DashboardPM(
-    private val params: PmParams,
+    params: PmParams,
     private val updateDashboardInteractor: UpdateDashboardInteractor,
     private val createDashboardInteractor: CreateDashboardInteractor
 ) : PresentationModel(params) {
-    private val id = _description.id
-    val name = MutableStateFlow(_description.name)
-    val targets = MutableStateFlow(_description.targets.toMutableList().toStates())
-    val states = MutableStateFlow(
+    private var _description = params.description as Description
+    private var _sourceDescription = _description.copy()
+
+    private val states: MutableStateFlow<State> = MutableStateFlow(
         when {
-            isNew() -> State.Edit
-            else -> State.View
+            isNew() -> createEditPMState(true)
+            else -> BaseViewStateImpl.ViewImpl(this)
         }
     )
 
-    private val _description
-        get() = params.description as Description
+    fun observeStates(): StateFlow<State> = states
 
-    fun isNew() = _description.type == Description.Type.NEW
+    fun isNew() = _description.id == null
 
-    fun handleCancelClick() {
+    private fun edit() {
+        states.value = createEditPMState(isNew())
+    }
+
+    private fun handleCancelClick() {
         if (isNew()) {
             cancel()
         } else {
             restoreData()
-            states.value = State.View
+            states.value = BaseViewStateImpl.ViewImpl(this)
         }
     }
 
-    fun handleActionClick() {
-        when (states.value) {
-            State.View -> {
-                states.value = State.Edit
-            }
-            State.Edit -> {
-                updateDashboard()
-            }
-
-            State.Saving -> { /*nothing to do*/
-            }
-        }
+    private fun createEditPMState(isNew: Boolean): State.Edit {
+        return BaseViewStateImpl.EditImpl(this, isNew)
     }
 
-    private fun updateDashboard() {
+    private fun updateDashboard(name: String, targets: Targets) {
         scope.launch {
-            states.value = State.Saving
+            states.value = BaseViewStateImpl.Saving(states.value)
             try {
-                val dashboard =
-                    if (id != null) {
-                        updateDashboardInteractor.updateDashboard(
-                            id,
-                            targets.value.toTargets(),
-                            name.value
-                        )
-                    } else {
-                        createDashboardInteractor.createDashboard(targets.value.toTargets(), name.value)
-                    }
+                val id = _description.id
+                val dashboard = if (id != null) {
+                    updateDashboardInteractor.updateDashboard(
+                        id, targets.states.value.toTargets(), name
+                    )
+                } else {
+                    createDashboardInteractor.createDashboard(
+                        targets.states.value.toTargets(), name
+                    )
+                }
                 updateData(dashboard)
             } catch (e: Exception) {
                 //todo: show error
             }
-            states.value = State.View
+            states.value = BaseViewStateImpl.ViewImpl(this@DashboardPM)
         }
     }
 
     private fun updateData(dashboard: Entities.WebPagesDashboard) {
-        targets.value = dashboard.targets().toStates()
-        name.value = dashboard.name()
+        _description = Description(
+            id = dashboard.id(), name = dashboard.name(), targets = dashboard.targets()
+        )
+        _sourceDescription = _description.copy()
     }
 
     private fun restoreData() {
-        targets.value = _description.targets.toStates()
-        name.value = _description.name
+        _description = _sourceDescription.copy()
     }
 
-    private fun moveLink(index: Int, up: Boolean): List<TargetState> {
-        val activeTargets = targets.value.toMutableList()
-        val item = activeTargets.removeAt(index)
-        val newIndex = if (up) {
-            index - 1
-        } else {
-            index + 1
-        }.coerceAtLeast(0)
-        activeTargets.add(newIndex, item)
-        return activeTargets
-    }
 
     private fun cancel() {
         messageHandler.send(CancelMessage)
     }
 
-    private fun List<String>.toStates(): List<TargetState> {
-        return this.mapIndexed { index: Int, s: String ->
-            TargetState(s, index == 0, index == size - 1, { action ->
-                val updatedTargets = when (action) {
-                    TargetAction.Up -> moveLink(index, true)
-                    TargetAction.Down -> moveLink(index, false)
-                    TargetAction.Remove -> {
-                        targets.value.toMutableList().apply {
-                            removeAt(index)
-                        }
-                    }
-                }
-                targets.value = updatedTargets
-            }) { updatedTarget ->
-                val updatedTargets = targets.value.toMutableList()
-                updatedTargets[index] = updatedTargets[index].copy(target = updatedTarget)
-                targets.value = updatedTargets
-                updatedTarget
-            }
-        }
-    }
-
     private fun List<TargetState>.toTargets(): List<String> {
         return map { targetState ->
-            targetState.target
+            targetState.target.value
         }
     }
 
     object CancelMessage : PmMessage
 
-    enum class State {
-        View, Edit, Saving
+    sealed interface State {
+        val name: ViewProperty<String>
+
+        val targets: Targets
+        interface View : State {
+            fun edit()
+        }
+
+        interface Edit : State {
+            fun save()
+            fun cancel()
+
+            val isNew: Boolean
+        }
+
+        interface Saving : State
+    }
+
+    open class BaseViewStateImpl(description: Description) {
+        val name by lazy {
+            StringProperty(description.name)
+        }
+        val targets: Targets by lazy {
+            TargetsImpl(description.targets)
+        }
+        data class ViewImpl(
+            private val pm: DashboardPM
+        ) : BaseViewStateImpl(pm._description), State.View {
+            override fun edit() {
+                pm.edit()
+            }
+        }
+
+        class EditImpl(
+            private val pm: DashboardPM,
+            override val isNew: Boolean = false,
+            val addLinkEnabled: Boolean = false
+        ) : BaseViewStateImpl(pm._description), State.Edit {
+
+            override fun save() {
+                pm.updateDashboard(
+                    name.value,
+                    targets
+                )
+            }
+
+            override fun cancel() {
+                pm.handleCancelClick()
+            }
+        }
+
+        class Saving(private val dashboardViewState: State) : State.Saving {
+            override val name: ViewProperty<String>
+                get() = dashboardViewState.name
+            override val targets: Targets
+                get() = dashboardViewState.targets
+
+        }
     }
 
     enum class TargetAction {
         Up, Down, Remove
     }
 
-    data class TargetState(
-        val target: String,
-        val upEnabled: Boolean,
-        val downEnabled: Boolean,
-        val actionCallback: (TargetAction) -> Unit,
-        val updateContentCallback: (String) -> String
-    )
+    interface TargetState {
+        val target: StringProperty
+        val upEnabled: Boolean
+        val downEnabled: Boolean
+    }
 
-    @Serializable
-    data class Description(
-        val id: String? = null,
-        val name: String = "",
-        val targets: List<String> = emptyList(),
-        val type: Type = Type.NEW
-    ) : PmDescription {
-        enum class Type {
-            EXISTING, NEW
+    data class TargetStateImpl(
+        override val target: StringProperty,
+        override var upEnabled: Boolean = false,
+        override var downEnabled: Boolean = false,
+    ) : TargetState
+
+    interface Targets {
+        val states: StateFlow<List<TargetState>>
+        fun handleAction(index: Int, action: TargetAction)
+
+        companion object : Targets {
+            override val states: StateFlow<List<TargetState>>
+                get() = MutableStateFlow(emptyList())
+
+            override fun handleAction(index: Int, action: TargetAction) = Unit
+
         }
     }
+
+    class TargetsImpl(
+        sourceList: List<String>
+    ) : Targets {
+
+        override val states: MutableStateFlow<List<TargetStateImpl>> by lazy {
+            MutableStateFlow(sourceList.toStates().apply {
+                updateButtons()
+            }.toList())
+        }
+        override fun handleAction(index: Int, action: TargetAction) {
+            when (action) {
+                TargetAction.Up -> moveLink(index, true)
+                TargetAction.Down -> moveLink(index, false)
+                TargetAction.Remove -> removeLinkAt(index)
+            }
+        }
+
+        private fun moveLink(index: Int, up: Boolean) {
+            val states = states.value.toMutableList()
+            val item = states.removeAt(index)
+            val newIndex = if (up) {
+                index - 1
+            } else {
+                index + 1
+            }.coerceAtLeast(0)
+            states.add(newIndex, item)
+            states.updateButtons()
+            this.states.value = states.toList()
+        }
+
+        private fun List<TargetStateImpl>.updateButtons() {
+            forEachIndexed { index, targetStateImpl ->
+                when(index) {
+                    0 -> {
+                        targetStateImpl.upEnabled = false
+                        targetStateImpl.downEnabled = size > 1
+                    }
+                    size - 1 -> {
+                        targetStateImpl.upEnabled = size > 1
+                        targetStateImpl.downEnabled = false
+                    }
+                    else -> {
+                        targetStateImpl.upEnabled = true
+                        targetStateImpl.downEnabled = true
+                    }
+                }
+            }
+        }
+
+        private fun removeLinkAt(index: Int) {
+            val result: MutableList<TargetStateImpl> = states.value.toMutableList()
+            result.removeAt(index)
+            states.value = result.toList()
+        }
+
+    }
+
+    data class Description(
+        val id: DashboardId? = null,
+        val name: String = "",
+        val targets: List<String> = emptyList()
+    ) : PmDescription
+
+}
+
+private fun List<String>.toStates(): List<DashboardPM.TargetStateImpl> {
+    val result = mutableListOf<DashboardPM.TargetStateImpl>()
+    forEachIndexed { _, rawTarget ->
+        result += DashboardPM.TargetStateImpl(
+            StringProperty(rawTarget)
+        )
+    }
+    return result
 }

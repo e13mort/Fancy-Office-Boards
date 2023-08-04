@@ -71,7 +71,7 @@ class DashboardsPM(
         return items.map {
             when (it) {
                 is Entities.WebPagesDashboard -> {
-                    Child<DashboardPM>(DashboardPM.Description(it.id(), it.name(), it.targets(), DashboardPM.Description.Type.EXISTING)).also { pm ->
+                    Child<DashboardPM>(DashboardPM.Description(it.id(), it.name(), it.targets())).also { pm ->
                         attachChild(pm)
                     }
                 }

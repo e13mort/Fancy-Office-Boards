@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.ir.interpreter.toIrConstOrNull
+
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -19,6 +21,13 @@ kotlin {
 
     sourceSets {
         /* Main source sets */
+
+        jvm {
+            dependencies {
+                commonMainImplementation(compose.runtime)
+            }
+        }
+
         val commonMain by getting {
             dependencies {
                 implementation(project(":common"))
@@ -41,7 +50,9 @@ kotlin {
         /* Test source sets */
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test"))
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.turbine)
             }
         }
         /* Test hierarchy */

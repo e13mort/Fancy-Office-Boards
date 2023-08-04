@@ -33,46 +33,47 @@ fun DashboardPM.Render() {
             padding(8.px)
         }
     }) {
-        val currentPMState = states.collectAsState().value
-        if (currentPMState == DashboardPM.State.Saving) {
+        val currentPMState = observeStates().collectAsState().value
+        if (currentPMState is DashboardPM.State.Saving) {
             RenderUpdatingLoader()
         }
-        RenderTitle(currentPMState)
-        RenderLinks(currentPMState)
-        RenderButtons()
+        currentPMState.RenderTitle()
+        currentPMState.RenderLinks()
+        currentPMState.RenderButtons()
     }
 }
 
 @Composable
-private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
-    val targets = targets.collectAsState().value
-    targets.forEachIndexed { index, link ->
+private fun DashboardPM.State.RenderLinks() {
+    val targetList = targets.states.collectAsState().value
+    val state = this
+    targetList.forEachIndexed { index, link ->
         Div(attrs = {
             style {
                 paddingBottom(4.px)
             }
         }) {
-            val disabled = when (currentPMState) {
-                DashboardPM.State.View -> true
-                DashboardPM.State.Edit -> false
-                DashboardPM.State.Saving -> true //? should render disabled buttons
+            val disabled = when (state) {
+                is DashboardPM.State.View -> true
+                is DashboardPM.State.Edit -> false
+                is DashboardPM.State.Saving -> true //? should render disabled buttons
             }
             RenderLink(link, index, disabled) {
                 if (!disabled) {
                     RenderButton(
                         LinkButton.Up, link.upEnabled
                     ) {
-                        link.actionCallback(DashboardPM.TargetAction.Up)
+                        targets.handleAction(index, DashboardPM.TargetAction.Up)
                     }
                     RenderButton(
                         LinkButton.Down, link.downEnabled
                     ) {
-                        link.actionCallback(DashboardPM.TargetAction.Down)
+                        targets.handleAction(index, DashboardPM.TargetAction.Down)
                     }
                     RenderButton(
-                        LinkButton.Remove, false
+                        LinkButton.Remove, true
                     ) {
-                        link.actionCallback(DashboardPM.TargetAction.Remove)
+                        targets.handleAction(index, DashboardPM.TargetAction.Remove)
                     }
                 }
             }
@@ -81,7 +82,8 @@ private fun DashboardPM.RenderLinks(currentPMState: DashboardPM.State) {
 }
 
 @Composable
-private fun DashboardPM.RenderTitle(currentPMState: DashboardPM.State) {
+private fun DashboardPM.State.RenderTitle() {
+    val state = this
     Div(
         attrs = {
             style {
@@ -89,11 +91,11 @@ private fun DashboardPM.RenderTitle(currentPMState: DashboardPM.State) {
             }
         }
     ) {
-        when (currentPMState) {
-            DashboardPM.State.View -> MDCBody1(name.value)
-            DashboardPM.State.Saving -> MDCBody1(name.value)
-            DashboardPM.State.Edit -> {
-                val currentNameValue = name.collectAsState().value
+        when (state) {
+            is DashboardPM.State.View -> MDCBody1(name.value)
+            is DashboardPM.State.Saving -> MDCBody1(name.value)
+            is DashboardPM.State.Edit -> {
+                val currentNameValue = name.flow.collectAsState().value
                 MDCTextField(
                     value = currentNameValue,
                     label = "Title",
@@ -115,14 +117,15 @@ private fun RenderLink(
     disabled: Boolean,
     trailingContent: @Composable () -> Unit
 ) {
-    MDCTextField(link.target,
+    val linkContent = link.target.flow.collectAsState().value
+    MDCTextField(linkContent,
         type = MDCTextFieldType.Outlined,
         maxLength = 1024.toUInt(),
         disabled = disabled,
         label = "Link ${index + 1}",
         attrs = {
             onInput { inputEvent ->
-                link.updateContentCallback(inputEvent.value)
+                link.target.value = inputEvent.value
             }
         },
         trailingIcon = {
@@ -131,39 +134,33 @@ private fun RenderLink(
 }
 
 @Composable
-private fun DashboardPM.RenderButtons() {
-    when (states.value) {
-        DashboardPM.State.View -> {
-            RenderButton(CardButton.Edit)
+private fun DashboardPM.State.RenderButtons() {
+    when (val value = this) {
+        is DashboardPM.State.View -> {
+            RenderButton(CardButton.Edit) { value.edit() }
         }
-        DashboardPM.State.Edit -> {
-            if (isNew())
-                RenderButton(CardButton.Create)
+        is DashboardPM.State.Edit -> {
+            if (value.isNew)
+                RenderButton(CardButton.Create) { value.save() }
             else
-                RenderButton(CardButton.Save)
-            RenderButton(CardButton.Cancel)
+                RenderButton(CardButton.Save) { value.save() }
+            RenderButton(CardButton.Cancel) { value.cancel() }
         }
 
-        DashboardPM.State.Saving -> {
-            RenderButton(CardButton.Updating, true)
+        is DashboardPM.State.Saving -> {
+            RenderButton(CardButton.Updating, true) { }
         }
     }
 }
 
 @Composable
-private fun DashboardPM.RenderButton(button: CardButton, disabled: Boolean = false) {
+private fun RenderButton(button: CardButton, disabled: Boolean = false, click: () -> Unit) {
     MDCButton(attrs = {
         if (disabled) {
             disabled()
         }
         onClick {
-            when (button) {
-                CardButton.Cancel -> handleCancelClick()
-                CardButton.Edit -> handleActionClick()
-                CardButton.Save -> handleActionClick()
-                CardButton.Create -> handleActionClick()
-                CardButton.Updating -> {  }
-            }
+            click()
         }
     }) {
         Icon(attrs = {
@@ -175,10 +172,10 @@ private fun DashboardPM.RenderButton(button: CardButton, disabled: Boolean = fal
 
 @Composable
 private fun RenderButton(
-    button: LinkButton, disabled: Boolean, callBack: () -> Unit
+    button: LinkButton, enabled: Boolean, callBack: () -> Unit
 ) {
     MDCButton(attrs = {
-        if (disabled) disabled()
+        if (!enabled) disabled()
         onClick {
             callBack()
         }
