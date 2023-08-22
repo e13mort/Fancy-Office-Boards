@@ -62,6 +62,7 @@ kotlin {
                 implementation(libs.sqldelight.driver.jvm)
                 implementation(libs.ktor.server.netty)
                 implementation(libs.ktor.builder.html)
+                implementation(libs.ktor.server.auth)
             }
         }
 
@@ -82,7 +83,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("dev.pavel.dashboard.ApplicationKt")
+    mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
 createCopyWebArtifactsTask(mainUIDist)
