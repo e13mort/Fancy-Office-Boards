@@ -11,7 +11,11 @@ plugins {
 group = "dev.pavel.dashboard"
 version = "0.1"
 
-val browserDist by configurations.creating {
+val mainUIDist by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+val adminDist by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
@@ -21,10 +25,18 @@ kotlin {
         withJava()
         dependencies {
             dependencies {
-                browserDist(
+                mainUIDist(
                     project(
                         mapOf(
                             "path" to ":client:web",
+                            "configuration" to "browserDist"
+                        )
+                    )
+                )
+                adminDist(
+                    project(
+                        mapOf(
+                            "path" to ":client:admin",
                             "configuration" to "browserDist"
                         )
                     )
@@ -49,6 +61,7 @@ kotlin {
             dependencies {
                 implementation(libs.sqldelight.driver.jvm)
                 implementation(libs.ktor.server.netty)
+                implementation(libs.ktor.builder.html)
             }
         }
 
@@ -72,6 +85,16 @@ application {
     mainClass.set("dev.pavel.dashboard.ApplicationKt")
 }
 
-tasks.withType<Copy>().named("jvmProcessResources") {
-    from(browserDist)
+createCopyWebArtifactsTask(mainUIDist)
+createCopyWebArtifactsTask(adminDist)
+
+fun createCopyWebArtifactsTask(configuration: Configuration) {
+    tasks.withType<Copy>().named("jvmProcessResources") {
+        from(configuration) {
+            into("scripts")
+            exclude {
+                it.name.endsWith("html") // ignore html from modules
+            }
+        }
+    }
 }

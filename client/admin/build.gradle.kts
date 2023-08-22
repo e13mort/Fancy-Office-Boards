@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.ir.interpreter.toIrConstOrNull
-
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
