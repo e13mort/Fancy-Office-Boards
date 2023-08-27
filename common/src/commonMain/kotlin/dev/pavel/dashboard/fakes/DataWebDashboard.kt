@@ -2,8 +2,10 @@ package dev.pavel.dashboard.fakes
 
 import dev.pavel.dashboard.entity.DashboardId
 import dev.pavel.dashboard.entity.Entities
+import kotlinx.serialization.Serializable
 
-class FakeWebDashboard(
+@Serializable
+class DataWebDashboard(
     private val targets: List<String>,
     private val timeout: Int,
     private val name: String,

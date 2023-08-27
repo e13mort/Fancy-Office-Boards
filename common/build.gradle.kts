@@ -23,6 +23,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.sqldelight.coroutines)
+                api(libs.ktor.resources)
             }
         }
         val jvmMain by getting {

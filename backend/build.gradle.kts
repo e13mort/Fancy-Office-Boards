@@ -55,6 +55,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.sqldelight.coroutines)
+                implementation(project(":common"))
             }
         }
         val jvmMain by getting {
@@ -63,6 +64,9 @@ kotlin {
                 implementation(libs.ktor.server.netty)
                 implementation(libs.ktor.builder.html)
                 implementation(libs.ktor.server.auth)
+                implementation(libs.ktor.server.content.negotiation)
+                implementation(libs.ktor.server.resources)
+                implementation(libs.ktor.serialization.kotlinx.json)
             }
         }
 

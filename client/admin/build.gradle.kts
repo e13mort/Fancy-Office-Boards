@@ -14,7 +14,6 @@ kotlin {
             }
         }
         binaries.executable()
-        nodejs()
     }
 
     sourceSets {
@@ -38,7 +37,7 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.js)
                 implementation(compose.runtime)
-                implementation(compose.web.core)
+                implementation(compose.html.core)
                 implementation(libs.kmdc)
                 implementation(libs.kmdcx)
             }

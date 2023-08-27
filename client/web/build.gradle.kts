@@ -8,7 +8,6 @@ kotlin {
     js(IR) {
         browser()
         binaries.executable()
-        nodejs()
     }
 
     sourceSets {
@@ -22,7 +21,7 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.js)
                 implementation(compose.runtime)
-                implementation(compose.web.core)
+                implementation(compose.html.core)
             }
         }
         val jsTest by getting
