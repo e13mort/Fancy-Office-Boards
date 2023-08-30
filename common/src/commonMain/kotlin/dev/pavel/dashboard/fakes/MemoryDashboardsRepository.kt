@@ -35,7 +35,7 @@ class MemoryDashboardsRepository(
     }
 
     companion object {
-        fun create() = MemoryDashboardsRepository(
+        fun create(delay: Long = 500) = MemoryDashboardsRepository(
             mutableMapOf(
                 "id1" to DataWebDashboard(
                     listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 1", "id1"
@@ -44,7 +44,7 @@ class MemoryDashboardsRepository(
                     listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 2", "id2"
                 )
             ),
-            delay = 500
+            delay = delay
         )
     }
 }

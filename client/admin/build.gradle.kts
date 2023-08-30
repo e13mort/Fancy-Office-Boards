@@ -31,11 +31,14 @@ kotlin {
                 api(libs.kotlinx.serialization.json)
                 implementation(libs.premo.main)
                 implementation(libs.premo.navigation)
+                implementation(libs.ktor.client.resources)
             }
         }
         val jsMain by getting {
             dependencies {
                 implementation(libs.ktor.client.js)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(compose.runtime)
                 implementation(compose.html.core)
                 implementation(libs.kmdc)

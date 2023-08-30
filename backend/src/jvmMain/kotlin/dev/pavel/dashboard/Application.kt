@@ -25,7 +25,7 @@ fun Application.module() {
     install(ContentNegotiation) {
         json()
     }
-    installRestApi()
+    installRestApi(authProviderName)
     routing {
         staticResources("scripts", "scripts")
         staticResources("static", "static")

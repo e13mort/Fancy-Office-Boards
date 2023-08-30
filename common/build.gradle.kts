@@ -23,6 +23,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.sqldelight.coroutines)
+                implementation(libs.ktor.client.resources)
                 api(libs.ktor.resources)
             }
         }
