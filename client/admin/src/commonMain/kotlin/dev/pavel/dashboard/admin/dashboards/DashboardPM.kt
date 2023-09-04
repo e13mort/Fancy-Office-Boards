@@ -1,5 +1,7 @@
 package dev.pavel.dashboard.admin.dashboards
 
+import dev.pavel.dashboard.admin.properties.StringProperty
+import dev.pavel.dashboard.admin.properties.ViewProperty
 import dev.pavel.dashboard.entity.DashboardId
 import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
@@ -8,9 +10,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import me.dmdev.premo.PmDescription
-import me.dmdev.premo.PmMessage
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
+import me.dmdev.premo.navigation.BackMessage
 
 class DashboardPM(
     params: PmParams,
@@ -29,7 +31,7 @@ class DashboardPM(
 
     fun observeStates(): StateFlow<State> = states
 
-    fun isNew() = _description.id == null
+    private fun isNew() = _description.id == null
 
     private fun edit() {
         states.value = createEditPMState(isNew())
@@ -83,7 +85,7 @@ class DashboardPM(
 
 
     private fun cancel() {
-        messageHandler.send(CancelMessage)
+        messageHandler.send(BackMessage)
     }
 
     private fun List<TargetState>.toTargets(): List<String> {
@@ -91,8 +93,6 @@ class DashboardPM(
             targetState.target.value
         }
     }
-
-    object CancelMessage : PmMessage
 
     sealed interface State {
         val name: ViewProperty<String>

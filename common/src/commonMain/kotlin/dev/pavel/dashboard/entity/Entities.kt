@@ -20,8 +20,9 @@ interface Entities {
         fun switchTimeoutSeconds(): Int
     }
 
-    interface DashboardDisplay {
-        fun activeDashboard(): Dashboard
+    interface Display {
+        fun name(): String
+        fun id(): DisplayId
     }
 }
 
@@ -45,4 +46,10 @@ interface DisplayRepository {
     fun dashboardIdForDisplay(id: DisplayId): DashboardId?
 
     fun saveDashboardForDisplay(displayId: DisplayId, dashboardId: DashboardId)
+
+    fun updateDisplayName(displayId: DisplayId, name: String)
+
+    fun createDisplay(name: String, dashboardId: DashboardId): DisplayId
+
+    fun allDisplays(): List<Entities.Display>
 }

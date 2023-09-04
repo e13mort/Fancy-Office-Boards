@@ -3,8 +3,13 @@ package dev.pavel.dashboard.admin
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import dev.pavel.dashboard.admin.dashboards.DashboardPM
 import dev.pavel.dashboard.admin.dashboards.DashboardsPM
+import dev.pavel.dashboard.admin.displays.DisplayPM
+import dev.pavel.dashboard.admin.displays.DisplaysPM
+import dev.pavel.dashboard.fakes.MemoryDisplayRepository
 import dev.pavel.dashboard.interactors.CreateDashboardInteractorImpl
+import dev.pavel.dashboard.interactors.DisplaysInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractorImpl
 import dev.pavel.dashboard.interactors.WebPagesDashboardInteractorImpl
 import dev.pavel.dashboard.repository.HttpDashboardRepository
@@ -35,11 +40,13 @@ fun createDependencies(): Admin.Dependencies {
     val dashboardRepository = HttpDashboardRepository(
         createHttpClient()
     )
+    val displayRepository = MemoryDisplayRepository()
     val backgroundDispatcher = Dispatchers.Main
     return Admin.Dependencies(
         WebPagesDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
         UpdateDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
-        CreateDashboardInteractorImpl(dashboardRepository, backgroundDispatcher)
+        CreateDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
+        DisplaysInteractor(displayRepository, backgroundDispatcher)
     )
 }
 
@@ -64,7 +71,11 @@ private fun createHttpClient(): HttpClient {
 private fun RenderUI(pm: AdminPM) {
     pm.RenderMaster()
     when (val detailsPM = pm.navigation.detailFlow.collectAsState().value) {
-        is DisplaysPM -> detailsPM.Render()
-        is DashboardsPM -> detailsPM.Render()
+        is DisplaysPM -> detailsPM.Render { childPm: DisplayPM ->
+            childPm.Render()
+        }
+        is DashboardsPM -> detailsPM.Render { childPM: DashboardPM ->
+            childPM.Render()
+        }
     }
 }

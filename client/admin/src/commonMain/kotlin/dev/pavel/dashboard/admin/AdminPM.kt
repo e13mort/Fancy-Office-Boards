@@ -2,9 +2,12 @@ package dev.pavel.dashboard.admin
 
 import dev.pavel.dashboard.admin.dashboards.DashboardPM
 import dev.pavel.dashboard.admin.dashboards.DashboardsPM
+import dev.pavel.dashboard.admin.displays.DisplayPM
+import dev.pavel.dashboard.admin.displays.DisplaysPM
+import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
-import dev.pavel.dashboard.interactors.WebPagesDashboardInteractor
+import dev.pavel.dashboard.interactors.DataItemsInteractor
 import kotlinx.serialization.Serializable
 import me.dmdev.premo.PmDelegate
 import me.dmdev.premo.PmDescription
@@ -55,11 +58,6 @@ class AdminMasterPM(params: PmParams) : PresentationModel(params) {
     object Description : PmDescription
 }
 
-class DisplaysPM(params: PmParams) : PresentationModel(params) {
-    @Serializable
-    object Description : PmDescription
-}
-
 object ShowDisplays : PmMessage
 
 object ShowDashboards : PmMessage
@@ -71,7 +69,10 @@ class AdminPMFactory(
         println("Create PM for ${params.tag} ${params.description}")
         return when (val description = params.description) {
             is AdminMasterPM.Description -> AdminMasterPM(params)
-            is DisplaysPM.Description -> DisplaysPM(params)
+            is DisplaysPM.Description -> DisplaysPM(
+                params = params,
+                dataItemsInteractor = dependencies.displayInteractor
+            )
             is DashboardsPM.Description -> DashboardsPM(
                 params,
                 dependencies.pagesDashboardInteractor
@@ -82,6 +83,7 @@ class AdminPMFactory(
                 dependencies.updateDashboardInteractor,
                 dependencies.createDashboardInteractor
             )
+            is DisplayPM.Description -> DisplayPM(params)
             else -> throw IllegalArgumentException("Not handled instance creation for pm description $description")
         }
     }
@@ -90,9 +92,10 @@ class AdminPMFactory(
 
 object Admin {
     class Dependencies(
-        val pagesDashboardInteractor: WebPagesDashboardInteractor,
+        val pagesDashboardInteractor: DataItemsInteractor<Entities.WebPagesDashboard>,
         val updateDashboardInteractor: UpdateDashboardInteractor,
-        val createDashboardInteractor: CreateDashboardInteractor
+        val createDashboardInteractor: CreateDashboardInteractor,
+        val displayInteractor: DataItemsInteractor<Entities.Display>,
     )
     fun createPMDelegate(dependencies: Dependencies) : PmDelegate<AdminPM> {
         return PmDelegate(

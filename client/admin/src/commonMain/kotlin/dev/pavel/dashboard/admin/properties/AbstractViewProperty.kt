@@ -1,4 +1,4 @@
-package dev.pavel.dashboard.admin.dashboards
+package dev.pavel.dashboard.admin.properties
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
