@@ -1,12 +1,7 @@
 package dev.pavel.dashboard.admin
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import dev.pavel.dashboard.admin.dashboards.DashboardPM
-import dev.pavel.dashboard.admin.dashboards.DashboardsPM
-import dev.pavel.dashboard.admin.displays.DisplayPM
-import dev.pavel.dashboard.admin.displays.DisplaysPM
+import dev.pavel.dashboard.admin.ui.Render
 import dev.pavel.dashboard.fakes.MemoryDisplayRepository
 import dev.pavel.dashboard.interactors.CreateDashboardInteractorImpl
 import dev.pavel.dashboard.interactors.DisplaysInteractor
@@ -31,7 +26,7 @@ fun main() {
                 delegate.presentationModel
             }
         }
-        RenderUI(pm)
+        pm.Render()
     }
 }
 
@@ -65,17 +60,4 @@ private fun createHttpClient(): HttpClient {
         }
     }
     return httpClient
-}
-
-@Composable
-private fun RenderUI(pm: AdminPM) {
-    pm.RenderMaster()
-    when (val detailsPM = pm.navigation.detailFlow.collectAsState().value) {
-        is DisplaysPM -> detailsPM.Render { childPm: DisplayPM ->
-            childPm.Render()
-        }
-        is DashboardsPM -> detailsPM.Render { childPM: DashboardPM ->
-            childPM.Render()
-        }
-    }
 }

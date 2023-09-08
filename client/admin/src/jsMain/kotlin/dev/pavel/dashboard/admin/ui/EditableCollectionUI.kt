@@ -1,4 +1,4 @@
-package dev.pavel.dashboard.admin
+package dev.pavel.dashboard.admin.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +26,7 @@ inline fun <reified T: PresentationModel>EditableCollectionPM<*, T>.Render(
     crossinline childRender: @Composable (T) -> Unit
 ) {
     val pm = this
-    LaunchedEffect("Load") {
+    LaunchedEffect(Unit) {
         load()
     }
     when(val state = dashboards().collectAsState().value) {

@@ -1,8 +1,10 @@
 package dev.pavel.dashboard.admin
 
 import dev.pavel.dashboard.admin.dashboards.DashboardPM
+import dev.pavel.dashboard.admin.dashboards.DashboardPMDelegate
 import dev.pavel.dashboard.admin.dashboards.DashboardsPM
 import dev.pavel.dashboard.admin.displays.DisplayPM
+import dev.pavel.dashboard.admin.displays.DisplayPMDelegate
 import dev.pavel.dashboard.admin.displays.DisplaysPM
 import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
@@ -66,7 +68,6 @@ class AdminPMFactory(
     private val dependencies: Admin.Dependencies
 ) : PmFactory {
     override fun createPm(params: PmParams): PresentationModel {
-        println("Create PM for ${params.tag} ${params.description}")
         return when (val description = params.description) {
             is AdminMasterPM.Description -> AdminMasterPM(params)
             is DisplaysPM.Description -> DisplaysPM(
@@ -80,10 +81,13 @@ class AdminPMFactory(
             is AdminPM.Description -> AdminPM(params)
             is DashboardPM.Description -> DashboardPM(
                 params,
-                dependencies.updateDashboardInteractor,
-                dependencies.createDashboardInteractor
+                DashboardPMDelegate(
+                    dependencies.updateDashboardInteractor,
+                    dependencies.createDashboardInteractor
+                )
+
             )
-            is DisplayPM.Description -> DisplayPM(params)
+            is DisplayPM.Description -> DisplayPM(params, DisplayPMDelegate())
             else -> throw IllegalArgumentException("Not handled instance creation for pm description $description")
         }
     }

@@ -3,6 +3,7 @@ package dev.pavel.dashboard.admin.dashboards
 import app.cash.turbine.TurbineTestContext
 import app.cash.turbine.test
 import dev.pavel.dashboard.admin.EmptyPMStateSaver
+import dev.pavel.dashboard.admin.EditableCollectionChildPM.State
 import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
@@ -22,32 +23,45 @@ import kotlin.test.assertTrue
 class DashboardPMTest {
     @Test
     fun existingItemShouldEmitViewState() = testPMStates {
-        nextStateIs<DashboardPM.State.View>()
+        nextStateIs<State.View<DashboardPM.Description>>()
     }
 
     @Test
     fun existingItemMovesToEditState() = testPMStates {
-        nextState<DashboardPM.State.View> {
+        nextState<State.View<DashboardPM.Description>> {
             edit()
         }
-        nextStateIs<DashboardPM.State.Edit>()
+        nextStateIs<State.Edit<DashboardPM.Description>>()
     }
 
     @Test
     fun cancelOnEditStateMovesToView() = testPMStates {
-        nextState<DashboardPM.State.View> {
+        nextState<State.View<DashboardPM.Description>> {
             edit()
         }
-        nextState<DashboardPM.State.Edit> {
+        nextState<State.Edit<DashboardPM.Description>> {
             cancel()
         }
-        nextStateIs<DashboardPM.State.View>()
+        nextStateIs<State.View<DashboardPM.Description>>()
+    }
+    @Test
+    fun cancelOnEditStateRestoreSourceData() = testPMStates {
+        nextState<State.View<DashboardPM.Description>> {
+            edit()
+        }
+        nextState<State.Edit<DashboardPM.Description>> {
+            item.name.value = "updated"
+            cancel()
+        }
+        nextState<State.View<DashboardPM.Description>> {
+            assertEquals("Test", item.name.value)
+        }
     }
 
     @Test
     fun validTargetOnViewState() = testPMStates {
-        nextState<DashboardPM.State.View> {
-            targets.states.test {
+        nextState<State.View<DashboardPM.Description>> {
+            item.targets.states.test {
                 val targetStateList = awaitItem()
                 assertTrue(targetStateList.size == 3)
                 assertEquals("first", targetStateList[0].target.value)
@@ -57,13 +71,13 @@ class DashboardPMTest {
 
     @Test
     fun removeTarget() = testPMStates {
-        nextState<DashboardPM.State.View> {
+        nextState<State.View<DashboardPM.Description>> {
             edit()
         }
-        nextState<DashboardPM.State.Edit> {
-            targets.states.test {
+        nextState<State.Edit<DashboardPM.Description>> {
+            item.targets.states.test {
                 skipItems(1)
-                targets.handleAction(0, DashboardPM.TargetAction.Remove)
+                item.targets.handleAction(0, DashboardPM.TargetAction.Remove)
                 val updatedTargets = awaitItem()
                 assertEquals(2, updatedTargets.size)
             }
@@ -73,9 +87,9 @@ class DashboardPMTest {
 
     @Test
     fun updateTargetName() = testPMStates {
-        nextState<DashboardPM.State.View> { edit() }
-        nextState<DashboardPM.State.Edit> {
-            targets.states.test {
+        nextState<State.View<DashboardPM.Description>> { edit() }
+        nextState<State.Edit<DashboardPM.Description>> {
+            item.targets.states.test {
                 val firstItems = awaitItem()
                 val target = firstItems[0].target
                 target.flow.test {
@@ -89,9 +103,9 @@ class DashboardPMTest {
 
     @Test
     fun linkArrowsAreCorrectAtFirst() = testPMStates {
-        nextState<DashboardPM.State.View> { edit() }
-        nextState<DashboardPM.State.Edit> {
-            targets.states.test {
+        nextState<State.View<DashboardPM.Description>> { edit() }
+        nextState<State.Edit<DashboardPM.Description>> {
+            item.targets.states.test {
                 val targets = awaitItem()
                 targets[0].top()
                 targets[1].middle()
@@ -101,11 +115,11 @@ class DashboardPMTest {
     }
     @Test
     fun linkArrowsAreCorrectAfterUpdate() = testPMStates {
-        nextState<DashboardPM.State.View> { edit() }
-        nextState<DashboardPM.State.Edit> {
-            targets.states.test {
+        nextState<State.View<DashboardPM.Description>> { edit() }
+        nextState<State.Edit<DashboardPM.Description>> {
+            item.targets.states.test {
                 skipItems(1)
-                targets.handleAction(1, DashboardPM.TargetAction.Up)
+                item.targets.handleAction(1, DashboardPM.TargetAction.Up)
                 val targets = awaitItem()
                 targets[0].top()
                 targets[1].middle()
@@ -129,13 +143,13 @@ class DashboardPMTest {
         assertFalse(downEnabled)
     }
 
-    private suspend inline fun <reified T : DashboardPM.State> TurbineTestContext<DashboardPM.State>.nextState(
+    private suspend inline fun <reified T> TurbineTestContext<State<DashboardPM.Description>>.nextState(
         block: T.() -> Unit
     ) {
         block(awaitItem() as T)
     }
 
-    private suspend inline fun <reified T : DashboardPM.State> TurbineTestContext<DashboardPM.State>.nextStateIs() {
+    private suspend inline fun <reified T>TurbineTestContext<State<DashboardPM.Description>>.nextStateIs() {
         assertIs<T>(awaitItem())
     }
 
@@ -144,7 +158,7 @@ class DashboardPMTest {
             "existing",
             "Test",
             listOf("first", "second", "third")
-        ), validate: suspend TurbineTestContext<DashboardPM.State>.() -> Unit
+        ), validate: suspend TurbineTestContext<State<DashboardPM.Description>>.() -> Unit
     ) =
         runPMTest(description) {
             observeStates().test(validate = validate)
@@ -162,8 +176,10 @@ class DashboardPMTest {
             null,
             TestPMFactory()
         ) { EmptyPMStateSaver },
-        TestUpdateDashboardInteractor(),
-        TestCreateDashboardInteractor()
+        DashboardPMDelegate(
+            TestUpdateDashboardInteractor(),
+            TestCreateDashboardInteractor()
+        )
     )
 
     internal class TestPMFactory : PmFactory {

@@ -2,15 +2,27 @@
 
 package dev.pavel.dashboard.admin.displays
 
+import dev.pavel.dashboard.admin.EditableCollectionChildPM
+import dev.pavel.dashboard.admin.properties.StringProperty
 import dev.pavel.dashboard.entity.DisplayId
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
-import me.dmdev.premo.PresentationModel
 
-class DisplayPM(pmParams: PmParams) : PresentationModel(params = pmParams) {
-    class Description(
-        val id: DisplayId? = null,
-        val name: String = ""
-    ) :
-        PmDescription
+class DisplayPM(
+    pmParams: PmParams,
+    delegate: DisplayPMDelegate
+) : EditableCollectionChildPM<DisplayPM.Description>(
+    pmParams = pmParams,
+    delegate = delegate
+) {
+    data class Description(
+        val id: DisplayId?,
+        val name: StringProperty
+    ) : PmDescription {
+        constructor(
+            id: DisplayId? = null,
+            name: String = ""
+        ) : this(id, StringProperty(name))
+
+    }
 }

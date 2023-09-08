@@ -12,6 +12,10 @@ abstract class AbstractViewProperty<T>(initialValue: T) : ViewProperty<T> {
         get() = _property.value
         set(value) = update(value)
 
+    override fun toString(): String {
+        return value.toString()
+    }
+
     private fun update(newValue: T) {
         // filter property here
         _property.value = newValue
