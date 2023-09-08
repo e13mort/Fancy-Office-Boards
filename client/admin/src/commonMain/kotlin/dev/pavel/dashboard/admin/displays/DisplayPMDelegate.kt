@@ -13,7 +13,8 @@ class DisplayPMDelegate : EditableCollectionChildPM.ChildDelegate<DisplayPM.Desc
     override fun copy(item: DisplayPM.Description): DisplayPM.Description {
         return item.copy(
             id = item.id.toString(),
-            name = StringProperty(item.name.value)
+            name = StringProperty(item.name.value),
+            description = StringProperty(item.description.value)
         )
     }
 

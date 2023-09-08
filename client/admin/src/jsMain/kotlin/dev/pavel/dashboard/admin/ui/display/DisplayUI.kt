@@ -2,6 +2,7 @@ package dev.pavel.dashboard.admin.ui.display
 
 import androidx.compose.runtime.Composable
 import dev.pavel.dashboard.admin.displays.DisplayPM
+import dev.pavel.dashboard.admin.ui.RenderAsDescription
 import dev.pavel.dashboard.admin.ui.RenderAsTitle
 import dev.pavel.dashboard.admin.ui.RenderCollection
 
@@ -11,6 +12,9 @@ fun DisplayPM.Render() {
         name.RenderAsTitle(
             isActive = isActive,
             label = "Name"
+        )
+        description.RenderAsDescription(
+            isActive = isActive
         )
     }
 }

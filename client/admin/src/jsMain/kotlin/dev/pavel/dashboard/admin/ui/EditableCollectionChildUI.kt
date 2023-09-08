@@ -17,6 +17,7 @@ import org.jetbrains.compose.web.css.alignItems
 import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.padding
 import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
@@ -34,10 +35,12 @@ fun <T> EditableCollectionChildPM<T>.RenderCollection(
         if (currentState is EditableCollectionChildPM.State.Saving) {
             RenderUpdatingLoader()
         }
-        when (currentState) {
-            is EditableCollectionChildPM.State.Edit -> currentState.item.renderContent(true)
-            is EditableCollectionChildPM.State.Saving -> currentState.item.renderContent(false)
-            is EditableCollectionChildPM.State.View -> currentState.item.renderContent(false)
+        Div {
+            when (currentState) {
+                is EditableCollectionChildPM.State.Edit -> currentState.item.renderContent(true)
+                is EditableCollectionChildPM.State.Saving -> currentState.item.renderContent(false)
+                is EditableCollectionChildPM.State.View -> currentState.item.renderContent(false)
+            }
         }
         currentState.RenderButtons()
     }

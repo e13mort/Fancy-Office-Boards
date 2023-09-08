@@ -17,12 +17,14 @@ class DisplayPM(
 ) {
     data class Description(
         val id: DisplayId?,
-        val name: StringProperty
+        val name: StringProperty,
+        val description: StringProperty
     ) : PmDescription {
         constructor(
             id: DisplayId? = null,
-            name: String = ""
-        ) : this(id, StringProperty(name))
+            name: String = "",
+            description: String = ""
+        ) : this(id, StringProperty(name), StringProperty(description))
 
     }
 }
