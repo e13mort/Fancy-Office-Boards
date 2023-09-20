@@ -4,15 +4,11 @@ import app.cash.turbine.TurbineTestContext
 import app.cash.turbine.test
 import dev.pavel.dashboard.admin.EmptyPMStateSaver
 import dev.pavel.dashboard.admin.EditableCollectionChildPM.State
-import dev.pavel.dashboard.entity.Entities
-import dev.pavel.dashboard.interactors.CreateDashboardInteractor
-import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
+import dev.pavel.dashboard.admin.test.TestPMFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import me.dmdev.premo.PmDescription
-import me.dmdev.premo.PmFactory
 import me.dmdev.premo.PmParams
-import me.dmdev.premo.PresentationModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -182,27 +178,4 @@ class DashboardPMTest {
         )
     )
 
-    internal class TestPMFactory : PmFactory {
-        override fun createPm(params: PmParams): PresentationModel {
-            TODO("Not yet implemented")
-        }
-
-    }
-
-    internal class TestUpdateDashboardInteractor : UpdateDashboardInteractor {
-        override suspend fun updateDashboard(
-            id: String, targets: List<String>, name: String
-        ): Entities.WebPagesDashboard {
-            TODO("Not yet implemented")
-        }
-
-    }
-
-    internal class TestCreateDashboardInteractor : CreateDashboardInteractor {
-        override suspend fun createDashboard(
-            targets: List<String>, name: String
-        ): Entities.WebPagesDashboard {
-            TODO("Not yet implemented")
-        }
-    }
 }

@@ -6,6 +6,7 @@ import dev.pavel.dashboard.fakes.MemoryDisplayRepository
 import dev.pavel.dashboard.interactors.CreateDashboardInteractorImpl
 import dev.pavel.dashboard.interactors.DisplaysInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractorImpl
+import dev.pavel.dashboard.interactors.UpdateDisplayInteractorImpl
 import dev.pavel.dashboard.interactors.WebPagesDashboardInteractorImpl
 import dev.pavel.dashboard.repository.HttpDashboardRepository
 import io.ktor.client.HttpClient
@@ -41,7 +42,8 @@ fun createDependencies(): Admin.Dependencies {
         WebPagesDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
         UpdateDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
         CreateDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
-        DisplaysInteractor(displayRepository, backgroundDispatcher)
+        DisplaysInteractor(displayRepository, dashboardRepository, backgroundDispatcher),
+        UpdateDisplayInteractorImpl(displayRepository, dashboardRepository, backgroundDispatcher)
     )
 }
 

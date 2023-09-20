@@ -7,8 +7,8 @@ import dev.pavel.dashboard.entity.Entities
 
 class MemoryDisplayRepository(
     private val data: MutableMap<DisplayId, DataDisplay> = mutableMapOf(
-        "id1" to DataDisplay("Display1", "id1"),
-        "id2" to DataDisplay("Display2", "id2")
+        "id0" to DataDisplay("id0","Display1",  "Memory Display 1"),
+        "id1" to DataDisplay("id1","Display2",  "Memory Display 2")
     )
 ) : DisplayRepository {
 
@@ -21,15 +21,14 @@ class MemoryDisplayRepository(
         mapping[displayId] = dashboardId //todo: move to a dedicated repository
     }
 
-    override fun updateDisplayName(displayId: DisplayId, name: String) {
+    override fun updateDisplay(displayId: DisplayId, name: String, description: String) {
         val item = data[displayId] ?: throw IllegalArgumentException("Display with id $displayId doesn't exists")
-        data[displayId] = item.copy(_name = name)
+        data[displayId] = item.copy(name = name, description = description)
     }
 
-    override fun createDisplay(name: String, dashboardId: DashboardId): DisplayId {
+    override fun createDisplay(name: String, description: String): DisplayId {
         val newId = "id${data.size}"
-        data[newId] = DataDisplay(name, newId)
-        mapping[newId] = dashboardId
+        data[newId] = DataDisplay(newId, name, description)
         return newId
     }
 

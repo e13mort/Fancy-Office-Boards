@@ -1,10 +1,11 @@
-@file:Suppress("unused")
-
 package dev.pavel.dashboard.admin.displays
 
 import dev.pavel.dashboard.admin.EditableCollectionChildPM
+import dev.pavel.dashboard.admin.properties.ListProperty
 import dev.pavel.dashboard.admin.properties.StringProperty
+import dev.pavel.dashboard.entity.DashboardId
 import dev.pavel.dashboard.entity.DisplayId
+import dev.pavel.dashboard.entity.Entities
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
 
@@ -18,13 +19,25 @@ class DisplayPM(
     data class Description(
         val id: DisplayId?,
         val name: StringProperty,
-        val description: StringProperty
+        val description: StringProperty,
+        val dashboard: ListProperty<String>,
     ) : PmDescription {
         constructor(
             id: DisplayId? = null,
-            name: String = "",
-            description: String = ""
-        ) : this(id, StringProperty(name), StringProperty(description))
-
+            displayName: String = "",
+            description: String = "",
+            dashboardId: DashboardId? = null,
+            availableDashboards: List<Entities.Dashboard>
+        ) : this(
+            id,
+            StringProperty(displayName),
+            StringProperty(description),
+            dashboard = ListProperty<DashboardId>(
+                initValue = dashboardId,
+                listItems = availableDashboards.map {
+                    ListProperty.ListItem(it.name(), it.id())
+                }
+            ),
+        )
     }
 }

@@ -23,8 +23,11 @@ interface Entities {
     interface Display {
         fun name(): String
         fun id(): DisplayId
+        fun description(): String
     }
 }
+
+typealias DisplayWithDashboard = Pair<Entities.Display, Entities.Dashboard?>
 
 interface DashboardRepository<T : Entities.Dashboard> {
     fun observeDashboardById(id: DashboardId): Flow<T>
@@ -47,9 +50,9 @@ interface DisplayRepository {
 
     fun saveDashboardForDisplay(displayId: DisplayId, dashboardId: DashboardId)
 
-    fun updateDisplayName(displayId: DisplayId, name: String)
+    fun updateDisplay(displayId: DisplayId, name: String, description: String)
 
-    fun createDisplay(name: String, dashboardId: DashboardId): DisplayId
+    fun createDisplay(name: String, description: String): DisplayId
 
     fun allDisplays(): List<Entities.Display>
 }

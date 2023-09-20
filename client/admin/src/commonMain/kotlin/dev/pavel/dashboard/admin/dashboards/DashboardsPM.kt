@@ -11,15 +11,16 @@ class DashboardsPM(
     dataItemsInteractor: DataItemsInteractor<Entities.WebPagesDashboard>
 ) : EditableCollectionPM<Entities.WebPagesDashboard, DashboardPM>(
     pmParams = params,
-    dataItemsInteractor = dataItemsInteractor,
-    childPMFactory = { it: Entities.WebPagesDashboard? ->
-        if (it == null) {
-            DashboardPM.Description()
-        } else {
-            DashboardPM.Description(it.id(), it.name(), it.targets())
-        }
-    }
+    dataItemsInteractor = dataItemsInteractor
 ) {
     @Serializable
     object Description : PmDescription
+
+    override fun createChildPm(model: Entities.WebPagesDashboard?): PmDescription {
+        return if (model == null) {
+            DashboardPM.Description()
+        } else {
+            DashboardPM.Description(model.id(), model.name(), model.targets())
+        }
+    }
 }

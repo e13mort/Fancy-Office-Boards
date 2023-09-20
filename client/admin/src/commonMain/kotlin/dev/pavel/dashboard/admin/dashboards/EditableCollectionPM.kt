@@ -8,10 +8,9 @@ import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
 import me.dmdev.premo.navigation.BackMessage
 
-open class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
+abstract class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
     pmParams: PmParams,
     private val dataItemsInteractor: DataItemsInteractor<ENTITY_TYPE>,
-    private val childPMFactory: (ENTITY_TYPE?) -> PmDescription
 ) : PresentationModel(pmParams) {
     private val _flow = MutableStateFlow<State>(LOADING)
     private var currentChildren: List<CHILD_PM> = emptyList()
@@ -27,6 +26,8 @@ open class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
         }
     }
 
+    abstract fun createChildPm(model: ENTITY_TYPE?): PmDescription
+
     private fun removeNewItems() {
         when(val state = _flow.value) {
             is EditableCollectionPM<*, *>.ItemsState -> {
@@ -41,11 +42,14 @@ open class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
     suspend fun load() {
         detachItems()
         _flow.value = LOADING
+        onLoad()
         val items: List<ENTITY_TYPE> = dataItemsInteractor.allDataItems()
         _flow.value = ItemsState(items = wrapAndAttachChildren(items).also {
             currentChildren = it
         })
     }
+
+    open suspend fun onLoad() = Unit
 
     private fun detachItems() {
         val value = _flow.value
@@ -58,7 +62,7 @@ open class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
 
     private fun wrapAndAttachChildren(items: List<ENTITY_TYPE>): List<CHILD_PM> {
         return items.map {
-            Child<CHILD_PM>(childPMFactory(it)).also { pm ->
+            Child<CHILD_PM>(createChildPm(it)).also { pm ->
                 attachChild(pm)
             }
         }
@@ -70,7 +74,7 @@ open class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
 
     fun addNewDashboard() {
         val items = currentChildren.toMutableList().also {
-            val newItem: CHILD_PM = Child(childPMFactory(null))
+            val newItem: CHILD_PM = Child(createChildPm(null))
             attachChild(newItem)
             it.add(newItem)
         }.toList()

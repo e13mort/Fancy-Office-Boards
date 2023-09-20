@@ -2,12 +2,15 @@ package dev.pavel.dashboard.fakes
 
 import dev.pavel.dashboard.entity.DisplayId
 import dev.pavel.dashboard.entity.Entities
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class DataDisplay(
-    private val _name: String,
-    private val _id: DisplayId
+    private val id: DisplayId,
+    private val name: String,
+    private val description: String
 ) : Entities.Display {
-    override fun name(): String = _name
-
-    override fun id(): DisplayId = _id
+    override fun name(): String = name
+    override fun description(): String = description
+    override fun id(): DisplayId = id
 }
