@@ -6,7 +6,6 @@ import dev.pavel.dashboard.admin.dashboards.DashboardsPM
 import dev.pavel.dashboard.admin.displays.DisplayPM
 import dev.pavel.dashboard.admin.displays.DisplayPMDelegate
 import dev.pavel.dashboard.admin.displays.DisplaysPM
-import dev.pavel.dashboard.entity.DisplayWithDashboard
 import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
@@ -105,7 +104,7 @@ object Admin {
         val pagesDashboardInteractor: DataItemsInteractor<Entities.WebPagesDashboard>,
         val updateDashboardInteractor: UpdateDashboardInteractor,
         val createDashboardInteractor: CreateDashboardInteractor,
-        val displayInteractor: DataItemsInteractor<DisplayWithDashboard>,
+        val displayInteractor: DataItemsInteractor<Entities.Display>,
         val updateDisplayInteractor: UpdateDisplayInteractor
     )
     fun createPMDelegate(dependencies: Dependencies) : PmDelegate<AdminPM> {

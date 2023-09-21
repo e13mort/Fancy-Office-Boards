@@ -1,7 +1,7 @@
 package dev.pavel.dashboard.interactors
 
 import dev.pavel.dashboard.entity.DashboardId
-import dev.pavel.dashboard.entity.DisplayWithDashboard
+import dev.pavel.dashboard.entity.Entities
 
 interface UpdateDisplayInteractor {
     suspend fun createOrUpdateDisplay(
@@ -9,5 +9,5 @@ interface UpdateDisplayInteractor {
         name: String,
         description: String,
         dashboardId: DashboardId?
-    ): DisplayWithDashboard
+    ): Entities.Display
 }

@@ -20,14 +20,13 @@ interface Entities {
         fun switchTimeoutSeconds(): Int
     }
 
-    interface Display {
+    sealed interface Display {
         fun name(): String
         fun id(): DisplayId
         fun description(): String
+        fun dashboardId(): DashboardId?
     }
 }
-
-typealias DisplayWithDashboard = Pair<Entities.Display, Entities.Dashboard?>
 
 interface DashboardRepository<T : Entities.Dashboard> {
     fun observeDashboardById(id: DashboardId): Flow<T>
@@ -46,13 +45,9 @@ interface WebPagesDashboardRepository : DashboardRepository<Entities.WebPagesDas
 }
 
 interface DisplayRepository {
-    fun dashboardIdForDisplay(id: DisplayId): DashboardId?
+    suspend fun updateDisplay(displayId: DisplayId, name: String, description: String, dashboardId: DashboardId?)
 
-    fun saveDashboardForDisplay(displayId: DisplayId, dashboardId: DashboardId)
+    suspend fun createDisplay(name: String, description: String, dashboardId: DashboardId?): DisplayId
 
-    fun updateDisplay(displayId: DisplayId, name: String, description: String)
-
-    fun createDisplay(name: String, description: String): DisplayId
-
-    fun allDisplays(): List<Entities.Display>
+    suspend fun allDisplays(): List<Entities.Display>
 }

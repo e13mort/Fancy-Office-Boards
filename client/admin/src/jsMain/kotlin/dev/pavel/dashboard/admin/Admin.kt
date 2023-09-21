@@ -2,13 +2,13 @@ package dev.pavel.dashboard.admin
 
 import androidx.compose.runtime.remember
 import dev.pavel.dashboard.admin.ui.Render
-import dev.pavel.dashboard.fakes.MemoryDisplayRepository
 import dev.pavel.dashboard.interactors.CreateDashboardInteractorImpl
 import dev.pavel.dashboard.interactors.DisplaysInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractorImpl
 import dev.pavel.dashboard.interactors.UpdateDisplayInteractorImpl
 import dev.pavel.dashboard.interactors.WebPagesDashboardInteractorImpl
 import dev.pavel.dashboard.repository.HttpDashboardRepository
+import dev.pavel.dashboard.repository.HttpDisplayRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -33,17 +33,16 @@ fun main() {
 
 // TODO: delegate to DI framework
 fun createDependencies(): Admin.Dependencies {
-    val dashboardRepository = HttpDashboardRepository(
-        createHttpClient()
-    )
-    val displayRepository = MemoryDisplayRepository()
+    val httpClient = createHttpClient()
+    val dashboardRepository = HttpDashboardRepository(httpClient)
+    val displayRepository = HttpDisplayRepository(httpClient)
     val backgroundDispatcher = Dispatchers.Main
     return Admin.Dependencies(
         WebPagesDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
         UpdateDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
         CreateDashboardInteractorImpl(dashboardRepository, backgroundDispatcher),
-        DisplaysInteractor(displayRepository, dashboardRepository, backgroundDispatcher),
-        UpdateDisplayInteractorImpl(displayRepository, dashboardRepository, backgroundDispatcher)
+        DisplaysInteractor(displayRepository, backgroundDispatcher),
+        UpdateDisplayInteractorImpl(displayRepository, backgroundDispatcher)
     )
 }
 

@@ -1,7 +1,6 @@
 package dev.pavel.dashboard.admin.displays
 
 import dev.pavel.dashboard.admin.dashboards.EditableCollectionPM
-import dev.pavel.dashboard.entity.DisplayWithDashboard
 import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.interactors.DataItemsInteractor
 import kotlinx.serialization.Serializable
@@ -10,9 +9,9 @@ import me.dmdev.premo.PmParams
 
 class DisplaysPM(
     params: PmParams,
-    dataItemsInteractor: DataItemsInteractor<DisplayWithDashboard>,
+    dataItemsInteractor: DataItemsInteractor<Entities.Display>,
     private val dashboardsInteractor: DataItemsInteractor<out Entities.Dashboard>
-) : EditableCollectionPM<DisplayWithDashboard, DisplayPM>(
+) : EditableCollectionPM<Entities.Display, DisplayPM>(
     pmParams = params,
     dataItemsInteractor = dataItemsInteractor,
 ) {
@@ -25,17 +24,17 @@ class DisplaysPM(
         allDataItems = dashboardsInteractor.allDataItems()
     }
 
-    override fun createChildPm(model: DisplayWithDashboard?): PmDescription {
+    override fun createChildPm(model: Entities.Display?): PmDescription {
         return if (model == null) {
             DisplayPM.Description(
                 availableDashboards = allDataItems
             )
         } else {
             DisplayPM.Description(
-                id = model.first.id(),
-                displayName = model.first.name(),
-                description = model.first.description(),
-                dashboardId = model.second?.id(),
+                id = model.id(),
+                displayName = model.name(),
+                description = model.description(),
+                dashboardId = model.dashboardId(),
                 availableDashboards = allDataItems
             )
         }

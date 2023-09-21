@@ -1,8 +1,11 @@
 package dev.pavel.dashboard
 
 import dev.pavel.dashboard.fakes.MemoryDashboardsRepository
+import dev.pavel.dashboard.fakes.MemoryDisplayRepository
 import dev.pavel.dashboard.resources.Dashboard
+import dev.pavel.dashboard.resources.Display
 import dev.pavel.dashboard.resources.UpdateContent
+import dev.pavel.dashboard.resources.UpdateDisplayContent
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
@@ -16,6 +19,7 @@ import io.ktor.server.routing.routing
 
 fun Application.installRestApi(authProviderName: String) {
     val dashboardsRepository = MemoryDashboardsRepository.create(0) //todo: use persisted storage
+    val displayRepository = MemoryDisplayRepository()
     routing {
         get<Dashboard.Id> { dashboard ->
             val webPagesDashboard = dashboardsRepository.findDashboardById(dashboard.id)
@@ -27,6 +31,15 @@ fun Application.installRestApi(authProviderName: String) {
         }
         get<Dashboard> {
             call.respond(dashboardsRepository.allDashboards())
+        }
+        get<Display.Id> { display ->
+            call.respond(displayRepository.allDisplays()
+                .filter {
+                    it.id() == display.id
+                })
+        }
+        get<Display> {
+            call.respond(displayRepository.allDisplays())
         }
         authenticate(authProviderName) {
             put<Dashboard.Id.Update> { updateInfo ->
@@ -40,6 +53,26 @@ fun Application.installRestApi(authProviderName: String) {
                 val newDashboardId =
                     dashboardsRepository.createDashboard(updateContent.items, updateContent.name)
                 call.respond(HttpStatusCode.Created, newDashboardId)
+            }
+            put<Display.Id.Update> { updateInfo ->
+                val id = updateInfo.id.id
+                val updateContent = call.receive<UpdateDisplayContent>()
+                displayRepository.updateDisplay(
+                    id,
+                    updateContent.name,
+                    updateContent.description,
+                    updateContent.dashboardId
+                )
+                call.respond(HttpStatusCode.OK)
+            }
+            post<Display> {
+                val displayContent = call.receive<UpdateDisplayContent>()
+                val newDisplayId = displayRepository.createDisplay(
+                    displayContent.name,
+                    displayContent.description,
+                    displayContent.dashboardId
+                )
+                call.respond(HttpStatusCode.Created, newDisplayId)
             }
         }
     }

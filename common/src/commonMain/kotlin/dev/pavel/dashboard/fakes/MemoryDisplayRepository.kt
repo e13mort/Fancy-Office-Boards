@@ -1,38 +1,34 @@
 package dev.pavel.dashboard.fakes
 
 import dev.pavel.dashboard.entity.DashboardId
+import dev.pavel.dashboard.entity.DataDisplay
 import dev.pavel.dashboard.entity.DisplayId
 import dev.pavel.dashboard.entity.DisplayRepository
-import dev.pavel.dashboard.entity.Entities
 
 class MemoryDisplayRepository(
     private val data: MutableMap<DisplayId, DataDisplay> = mutableMapOf(
-        "id0" to DataDisplay("id0","Display1",  "Memory Display 1"),
-        "id1" to DataDisplay("id1","Display2",  "Memory Display 2")
+        "id0" to DataDisplay("id0","Display1",  "Memory Display 1", null),
+        "id1" to DataDisplay("id1","Display2",  "Memory Display 2", null)
     )
 ) : DisplayRepository {
 
-    private val mapping = mutableMapOf<DisplayId, DashboardId>()
-    override fun dashboardIdForDisplay(id: DisplayId): DashboardId? {
-        return mapping[id] //todo: move to a dedicated repository
-    }
-
-    override fun saveDashboardForDisplay(displayId: DisplayId, dashboardId: DashboardId) {
-        mapping[displayId] = dashboardId //todo: move to a dedicated repository
-    }
-
-    override fun updateDisplay(displayId: DisplayId, name: String, description: String) {
+    override suspend fun updateDisplay(
+        displayId: DisplayId,
+        name: String,
+        description: String,
+        dashboardId: DashboardId?
+    ) {
         val item = data[displayId] ?: throw IllegalArgumentException("Display with id $displayId doesn't exists")
-        data[displayId] = item.copy(name = name, description = description)
+        data[displayId] = item.copy(name = name, description = description, dashboardId = dashboardId)
     }
 
-    override fun createDisplay(name: String, description: String): DisplayId {
+    override suspend fun createDisplay(name: String, description: String, dashboardId: DashboardId?): DisplayId {
         val newId = "id${data.size}"
-        data[newId] = DataDisplay(newId, name, description)
+        data[newId] = DataDisplay(newId, name, description, dashboardId)
         return newId
     }
 
-    override fun allDisplays(): List<Entities.Display> {
+    override suspend fun allDisplays(): List<DataDisplay> {
         return data.values.toList()
     }
 }

@@ -77,7 +77,6 @@ class DisplayPMTest {
             DisplayPMDelegate(
                 updateDisplayInteractor = UpdateDisplayInteractorImpl(
                     MemoryDisplayRepository(),
-                    dashboardRepository,
                     Dispatchers.Main
                 ),
                 dashboardDataItemsInteractor = object : DataItemsInteractor<Entities.Dashboard> {

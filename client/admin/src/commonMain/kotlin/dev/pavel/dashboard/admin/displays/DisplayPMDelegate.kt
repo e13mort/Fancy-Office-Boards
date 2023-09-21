@@ -32,12 +32,11 @@ class DisplayPMDelegate(
             item.description.value,
             item.dashboard.value?.data
         )
-        updatedDisplay.first.id() to updatedDisplay.second?.id()
         return DisplayPM.Description(
-            id = updatedDisplay.first.id(),
-            displayName = updatedDisplay.first.name(),
-            description = updatedDisplay.first.description(),
-            dashboardId = updatedDisplay.second?.id(),
+            id = updatedDisplay.id(),
+            displayName = updatedDisplay.name(),
+            description = updatedDisplay.description(),
+            dashboardId = updatedDisplay.dashboardId(),
             dashboardDataItemsInteractor.allDataItems()
         )
     }
