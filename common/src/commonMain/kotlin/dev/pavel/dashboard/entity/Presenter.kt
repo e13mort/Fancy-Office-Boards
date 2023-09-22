@@ -14,6 +14,8 @@ interface Presenter {
 
         data class WebPage(val path: String): UIState()
 
+        data class Displays(val displays: List<Entities.Display>): UIState()
+
         object Loading : UIState()
     }
 

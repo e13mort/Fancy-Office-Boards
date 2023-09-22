@@ -2,11 +2,17 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.desktop)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
     js(IR) {
-        browser()
+        browser {
+            commonWebpackConfig {
+                cssSupport { enabled.set(true) }
+                scssSupport { enabled.set(true) }
+            }
+        }
         binaries.executable()
     }
 
@@ -15,6 +21,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":common"))
+                implementation(libs.kotlinx.serialization.json)
             }
         }
         val jsMain by getting {
@@ -22,6 +29,10 @@ kotlin {
                 implementation(libs.ktor.client.js)
                 implementation(compose.runtime)
                 implementation(compose.html.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.kmdc)
+                implementation(libs.kmdcx)
             }
         }
         val jsTest by getting

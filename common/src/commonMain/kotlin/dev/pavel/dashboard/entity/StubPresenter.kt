@@ -1,25 +1,48 @@
 package dev.pavel.dashboard.entity
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 class StubPresenter(
-    private val links: List<String>,
-    private val timeoutMillis: Long
+    private val displayRepository: DisplayRepository,
+    private val dashboardRepository: DashboardRepository<Entities.WebPagesDashboard>,
+    dispatcher: CoroutineDispatcher
 ) : Presenter {
-    override fun observeUIStates(): Flow<Presenter.UIState> {
 
-        val links = this.links.toMutableList()
+    private val _states: MutableStateFlow<Presenter.UIState> = MutableStateFlow(Presenter.UIState.Loading)
+    private val coroutineScope = CoroutineScope(dispatcher)
+    private var activeJob: Job? = null
+    fun start() {
+        coroutineScope.launch {
+            val displays = displayRepository.allDisplays()
+            _states.value = Presenter.UIState.Displays(displays)
+        }
+    }
+    override fun observeUIStates(): StateFlow<Presenter.UIState> {
+        return _states
+    }
 
-        return flow {
-            while (currentCoroutineContext().isActive) {
-                delay(timeoutMillis)
-                val first = links.removeFirst()
-                emit(Presenter.UIState.WebPage(first))
-                links.add(first)
+    fun onDisplaySelected(id: DashboardId?) {
+        if (id == null) return
+        coroutineScope.launch {
+            _states.value = Presenter.UIState.Loading
+            val dashboardById = dashboardRepository.findDashboardById(id) ?: return@launch
+            val links = dashboardById.targets().toMutableList()
+            activeJob?.cancel()
+            activeJob = launch {
+                while (currentCoroutineContext().isActive) {
+                    val first = links.removeFirst()
+                    _states.value = Presenter.UIState.WebPage(first)
+                    links.add(first)
+                    delay(dashboardById.switchTimeoutSeconds() * 1000L)
+                }
             }
         }
     }
