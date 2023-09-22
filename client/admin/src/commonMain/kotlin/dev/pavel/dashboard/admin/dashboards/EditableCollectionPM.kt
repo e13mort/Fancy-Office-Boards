@@ -1,8 +1,10 @@
 package dev.pavel.dashboard.admin.dashboards
 
+import dev.pavel.dashboard.admin.EditableCollectionChildPM
 import dev.pavel.dashboard.interactors.DataItemsInteractor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
@@ -19,6 +21,10 @@ abstract class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
             when(msg) {
                 is BackMessage -> {
                     removeNewItems()
+                    true
+                }
+                is EditableCollectionChildPM.ChildBecameInvalid -> {
+                    reloadItems()
                     true
                 }
                 else -> false
@@ -50,6 +56,12 @@ abstract class EditableCollectionPM<ENTITY_TYPE, CHILD_PM: PresentationModel>(
     }
 
     open suspend fun onLoad() = Unit
+
+    private fun reloadItems() {
+        scope.launch {
+            load()
+        }
+    }
 
     private fun detachItems() {
         val value = _flow.value

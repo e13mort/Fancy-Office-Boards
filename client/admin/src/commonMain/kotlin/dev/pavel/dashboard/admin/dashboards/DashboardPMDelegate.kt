@@ -14,6 +14,11 @@ class DashboardPMDelegate(
         return description as DashboardPM.Description
     }
 
+    override suspend fun delete(item: DashboardPM.Description) {
+        if (item.id == null) return
+        updateDashboardInteractor.delete(item.id)
+    }
+
     override fun copy(item: DashboardPM.Description): DashboardPM.Description {
         return item.copy(
             id = item.id.toString(),

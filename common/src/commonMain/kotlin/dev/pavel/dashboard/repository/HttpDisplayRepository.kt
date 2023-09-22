@@ -9,6 +9,7 @@ import dev.pavel.dashboard.resources.UpdateDisplayContent
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.resources.href
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -53,5 +54,13 @@ class HttpDisplayRepository(
 
     override suspend fun allDisplays(): List<DataDisplay> {
         return httpClient.get(httpClient.href(Display())).body()
+    }
+
+    override suspend fun delete(id: DisplayId) {
+        val delete = httpClient.delete(httpClient.href(Display.Id(id = id)))
+        val status = delete.status
+        if (status != HttpStatusCode.OK) {
+            throw IllegalStateException("Server responded with code: $status")
+        }
     }
 }

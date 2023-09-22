@@ -23,6 +23,10 @@ class MemoryDashboardsRepository(
         return dashboards.values.toList()
     }
 
+    override suspend fun delete(id: DashboardId) {
+        dashboards.remove(id)
+    }
+
     override suspend fun updateDashboard(id: DashboardId, targets: List<String>, name: String) {
         delay(delay)
         dashboards[id] = DataWebDashboard(targets, 0, name, id)

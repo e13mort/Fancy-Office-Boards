@@ -11,6 +11,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
+import io.ktor.server.resources.delete
 import io.ktor.server.resources.get
 import io.ktor.server.resources.post
 import io.ktor.server.resources.put
@@ -73,6 +74,14 @@ fun Application.installRestApi(authProviderName: String) {
                     displayContent.dashboardId
                 )
                 call.respond(HttpStatusCode.Created, newDisplayId)
+            }
+            delete<Display.Id> { display ->
+                displayRepository.delete(display.id)
+                call.respond(HttpStatusCode.OK)
+            }
+            delete<Dashboard.Id> { dashboard ->
+                dashboardsRepository.delete(dashboard.id)
+                call.respond(HttpStatusCode.OK)
             }
         }
     }

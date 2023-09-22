@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import me.dmdev.premo.PmDescription
+import me.dmdev.premo.PmMessage
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
 import me.dmdev.premo.navigation.BackMessage
@@ -17,6 +18,7 @@ abstract class EditableCollectionChildPM<T>(
         fun isNew(item: T): Boolean
         suspend fun save(item: T): T
         fun copy(item: T): T
+        suspend fun delete(item: T)
     }
 
     private var activeData = delegate.create(pmParams.description)
@@ -55,6 +57,31 @@ abstract class EditableCollectionChildPM<T>(
         states.value = State.Edit(states.value.item, this)
     }
 
+    private fun delete(type: DeleteAction) {
+        when (type) {
+            DeleteAction.Request -> states.value = State.Edit(
+                item = states.value.item,
+                host = this,
+                showDeleteDialog = true
+            )
+            DeleteAction.Confirm -> deleteCurrentItem()
+            DeleteAction.Cancel -> states.value = State.Edit(states.value.item, this)
+        }
+    }
+
+    private fun deleteCurrentItem() {
+        scope.launch {
+            val currentItem = states.value.item
+            states.value = State.Saving(currentItem)
+            delegate.delete(currentItem)
+            messageHandler.send(ChildBecameInvalid)
+        }
+    }
+
+    enum class DeleteAction {
+        Request, Confirm, Cancel
+    }
+
     sealed class State<T>(
         val item: T
     ) {
@@ -67,6 +94,7 @@ abstract class EditableCollectionChildPM<T>(
         class Edit<T>(
             item: T,
             private val host: EditableCollectionChildPM<T>,
+            val showDeleteDialog: Boolean = false
         ) : State<T>(item) {
             val isNew: Boolean = host.delegate.isNew(host.activeData)
             fun cancel() {
@@ -76,8 +104,14 @@ abstract class EditableCollectionChildPM<T>(
             fun save() {
                 host.save()
             }
+
+            fun delete(type: DeleteAction) {
+                host.delete(type)
+            }
         }
 
         class Saving<T>(item: T) : State<T>(item)
     }
+
+    object ChildBecameInvalid : PmMessage
 }

@@ -31,4 +31,8 @@ class MemoryDisplayRepository(
     override suspend fun allDisplays(): List<DataDisplay> {
         return data.values.toList()
     }
+
+    override suspend fun delete(id: DisplayId) {
+        data.remove(id)
+    }
 }

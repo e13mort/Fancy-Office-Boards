@@ -34,6 +34,7 @@ interface DashboardRepository<T : Entities.Dashboard> {
     suspend fun findDashboardById(id: DashboardId): T?
 
     suspend fun allDashboards(): List<T>
+    suspend fun delete(id: DashboardId)
 
     class MissedDashboardException : Throwable()
 }
@@ -50,4 +51,5 @@ interface DisplayRepository {
     suspend fun createDisplay(name: String, description: String, dashboardId: DashboardId?): DisplayId
 
     suspend fun allDisplays(): List<Entities.Display>
+    suspend fun delete(id: DisplayId)
 }

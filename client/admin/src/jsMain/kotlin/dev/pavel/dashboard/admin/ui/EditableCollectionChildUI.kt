@@ -6,6 +6,11 @@ import dev.pavel.dashboard.admin.EditableCollectionChildPM
 import dev.petuska.kmdc.button.Icon
 import dev.petuska.kmdc.button.Label
 import dev.petuska.kmdc.button.MDCButton
+import dev.petuska.kmdc.dialog.Action
+import dev.petuska.kmdc.dialog.Actions
+import dev.petuska.kmdc.dialog.Content
+import dev.petuska.kmdc.dialog.MDCDialog
+import dev.petuska.kmdc.dialog.onClosed
 import dev.petuska.kmdc.elevation.MDCElevation
 import dev.petuska.kmdc.linear.progress.MDCLinearProgress
 import dev.petuska.kmdcx.icons.MDCIcon
@@ -13,6 +18,7 @@ import dev.petuska.kmdcx.icons.mdcIcon
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.css.AlignItems
 import org.jetbrains.compose.web.css.JustifyContent
+import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.css.alignItems
 import org.jetbrains.compose.web.css.justifyContent
 import org.jetbrains.compose.web.css.padding
@@ -36,11 +42,12 @@ fun <T> EditableCollectionChildPM<T>.RenderCollection(
             RenderUpdatingLoader()
         }
         Div {
-            when (currentState) {
-                is EditableCollectionChildPM.State.Edit -> currentState.item.renderContent(true)
-                is EditableCollectionChildPM.State.Saving -> currentState.item.renderContent(false)
-                is EditableCollectionChildPM.State.View -> currentState.item.renderContent(false)
+            val isActive = when (currentState) {
+                is EditableCollectionChildPM.State.Edit -> true
+                is EditableCollectionChildPM.State.Saving -> false
+                is EditableCollectionChildPM.State.View -> false
             }
+            currentState.item.renderContent(isActive)
         }
         currentState.RenderButtons()
     }
@@ -59,6 +66,12 @@ private fun EditableCollectionChildPM.State<*>.RenderButtons() {
             else
                 RenderButton(CardButton.Save) { value.save() }
             RenderButton(CardButton.Cancel) { value.cancel() }
+            if (!value.isNew) {
+                RenderButton(CardButton.Delete, styleBlock = {
+                    property("float", "right")
+                }) { value.delete(EditableCollectionChildPM.DeleteAction.Request) }
+                RenderDeleteDialog(value)
+            }
         }
 
         is EditableCollectionChildPM.State.Saving -> {
@@ -68,7 +81,37 @@ private fun EditableCollectionChildPM.State<*>.RenderButtons() {
 }
 
 @Composable
-private fun RenderButton(button: CardButton, disabled: Boolean = false, click: () -> Unit) {
+private fun RenderDeleteDialog(value: EditableCollectionChildPM.State.Edit<*>) {
+    MDCDialog(
+        open = value.showDeleteDialog,
+        stacked = false,
+        attrs = {
+            onClosed { eventDetailMDCEvent ->
+                val action = when (eventDetailMDCEvent.detail.action) {
+                    "ok" -> EditableCollectionChildPM.DeleteAction.Confirm
+                    else -> EditableCollectionChildPM.DeleteAction.Cancel
+                }
+                value.delete(action)
+            }
+        }
+    ) {
+        Content {
+            Text("Delete item?")
+        }
+        Actions {
+            Action("ok", "Ok")
+            Action("close", "Cancel")
+        }
+    }
+}
+
+@Composable
+private fun RenderButton(
+    button: CardButton,
+    disabled: Boolean = false,
+    styleBlock: StyleScope.() -> Unit = {},
+    click: () -> Unit
+) {
     MDCButton(attrs = {
         if (disabled) {
             disabled()
@@ -76,6 +119,7 @@ private fun RenderButton(button: CardButton, disabled: Boolean = false, click: (
         onClick {
             click()
         }
+        style(styleBlock)
     }) {
         Icon(attrs = {
             mdcIcon()
@@ -94,6 +138,7 @@ enum class CardButton(
     Create("Create", MDCIcon.Create),
     Updating("Saving...", MDCIcon.Create),
     Add("Add", MDCIcon.Add),
+    Delete("Delete", MDCIcon.Delete),
 }
 
 @Composable

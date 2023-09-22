@@ -16,6 +16,11 @@ class DisplayPMDelegate(
         return description as DisplayPM.Description
     }
 
+    override suspend fun delete(item: DisplayPM.Description) {
+        if (item.id == null) return
+        updateDisplayInteractor.deleteDisplay(item.id)
+    }
+
     override fun copy(item: DisplayPM.Description): DisplayPM.Description {
         return item.copy(
             id = item.id.toString(),

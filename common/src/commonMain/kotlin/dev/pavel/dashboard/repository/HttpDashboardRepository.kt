@@ -9,6 +9,7 @@ import dev.pavel.dashboard.resources.UpdateContent
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.resources.href
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -58,5 +59,12 @@ class HttpDashboardRepository(
 
     override suspend fun allDashboards(): List<DataWebDashboard> {
         return httpClient.get(httpClient.href(Dashboard())).body()
+    }
+
+    override suspend fun delete(id: DashboardId) {
+        val status = httpClient.delete(httpClient.href(Dashboard.Id(id = id))).status
+        if (status != HttpStatusCode.OK) {
+            throw IllegalStateException("Server responded with code: $status")
+        }
     }
 }
