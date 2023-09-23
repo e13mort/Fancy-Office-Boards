@@ -14,6 +14,10 @@ import dev.petuska.kmdc.select.anchor.Anchor
 import dev.petuska.kmdc.select.menu.Menu
 import dev.petuska.kmdc.select.menu.SelectItem
 import dev.petuska.kmdc.select.onChange
+import org.jetbrains.compose.web.css.StyleScope
+import org.jetbrains.compose.web.css.marginTop
+import org.jetbrains.compose.web.css.paddingTop
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Div
 
 @Composable
@@ -24,17 +28,27 @@ fun DisplayPM.Render() {
             label = "Name"
         )
         description.RenderAsDescription(
-            isActive = isActive
+            isActive = isActive,
+            containerStyle = {
+                paddingTop(8.px)
+            }
         )
         dashboard.Render(
-            isActive = isActive
+            isActive = isActive,
+            containerStyle = {
+                marginTop(8.px)
+            }
         )
     }
 }
 
 @Composable
-fun ListProperty<String>.Render(isActive: Boolean) {
-    Div {
+fun ListProperty<String>.Render(isActive: Boolean, containerStyle: StyleScope.() -> Unit = {}) {
+    Div(
+        attrs = {
+            style(containerStyle)
+        }
+    ) {
         MDCSelect(
             type = MDCSelectType.Outlined,
             attrs = {

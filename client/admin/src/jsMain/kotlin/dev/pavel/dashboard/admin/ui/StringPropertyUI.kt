@@ -8,6 +8,7 @@ import dev.petuska.kmdc.textfield.MDCTextField
 import dev.petuska.kmdc.textfield.MDCTextFieldType
 import dev.petuska.kmdc.typography.MDCBody1
 import dev.petuska.kmdc.typography.MDCCaption
+import org.jetbrains.compose.web.css.StyleScope
 import org.jetbrains.compose.web.css.padding
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Div
@@ -78,21 +79,26 @@ fun StringProperty.RenderFormfield(
 @Composable
 fun StringProperty.RenderAsDescription(
     isActive: Boolean = false,
-    label: String = "Description"
+    label: String = "Description",
+    containerStyle: StyleScope.() -> Unit = {}
 ) {
-    val content = flow.collectAsState().value
-    MDCTextArea(
-        value = content,
-        label = label,
-        disabled = !isActive,
-        type = MDCTextFieldType.Outlined,
-        rows = 2u,
-        attrs = {
-            onInput {
-                if (isActive) {
-                    value = it.value
+    Div(attrs = {
+        style(containerStyle)
+    }) {
+        val content = flow.collectAsState().value
+        MDCTextArea(
+            value = content,
+            label = label,
+            disabled = !isActive,
+            type = MDCTextFieldType.Outlined,
+            rows = 2u,
+            attrs = {
+                onInput {
+                    if (isActive) {
+                        value = it.value
+                    }
                 }
             }
-        }
-    )
+        )
+    }
 }
