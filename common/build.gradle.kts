@@ -62,3 +62,11 @@ kotlin {
         jsTest.dependsOn(commonTest)
     }
 }
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("dev.pavel.dashboard.db")
+        }
+    }
+}

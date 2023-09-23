@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     application
     `maven-publish`
-    alias(libs.plugins.sqldelight)
 }
 
 /* required for maven publication */
