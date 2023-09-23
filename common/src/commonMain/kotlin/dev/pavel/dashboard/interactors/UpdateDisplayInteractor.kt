@@ -11,7 +11,7 @@ import dev.pavel.dashboard.entity.Entities
 
 interface UpdateDisplayInteractor {
     suspend fun createOrUpdateDisplay(
-        id: String?,
+        id: DisplayId?,
         name: String,
         description: String,
         dashboardId: DashboardId?

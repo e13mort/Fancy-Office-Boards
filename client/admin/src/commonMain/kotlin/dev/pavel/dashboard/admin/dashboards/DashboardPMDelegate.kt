@@ -26,7 +26,7 @@ class DashboardPMDelegate(
 
     override fun copy(item: DashboardPM.Description): DashboardPM.Description {
         return item.copy(
-            id = item.id.toString(),
+            id = item.id,
             name = item.name.copy(),
             targets = DashboardPM.TargetsImpl(item.targets.states.value.toTargets()),
             switchDelaySeconds = item.switchDelaySeconds.copy()

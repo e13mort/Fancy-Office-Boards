@@ -12,8 +12,8 @@ import dev.pavel.dashboard.entity.DisplayRepository
 
 class MemoryDisplayRepository(
     private val data: MutableMap<DisplayId, DataDisplay> = mutableMapOf(
-        "id0" to DataDisplay("id0","Display1",  "Memory Display 1", null),
-        "id1" to DataDisplay("id1","Display2",  "Memory Display 2", null)
+        0 to DataDisplay(0,"Display1",  "Memory Display 1", null),
+        1 to DataDisplay(1,"Display2",  "Memory Display 2", null)
     )
 ) : DisplayRepository {
 
@@ -28,7 +28,7 @@ class MemoryDisplayRepository(
     }
 
     override suspend fun createDisplay(name: String, description: String, dashboardId: DashboardId?): DisplayId {
-        val newId = "id${data.size}"
+        val newId = data.size
         data[newId] = DataDisplay(newId, name, description, dashboardId)
         return newId
     }

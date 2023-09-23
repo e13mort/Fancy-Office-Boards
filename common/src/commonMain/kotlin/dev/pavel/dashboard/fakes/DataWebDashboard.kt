@@ -14,7 +14,7 @@ class DataWebDashboard(
     private val targets: List<String>,
     private val switchTimeoutSeconds: Int,
     private val name: String,
-    private val id: String
+    private val id: DashboardId
 ) : Entities.WebPagesDashboard {
     override fun targets(): List<String> {
         return targets

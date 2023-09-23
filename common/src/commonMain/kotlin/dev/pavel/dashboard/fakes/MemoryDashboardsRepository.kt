@@ -47,7 +47,7 @@ class MemoryDashboardsRepository(
         name: String,
         switchTimeSeconds: Int
     ): DashboardId {
-        return "id${dashboards.size + 1}".also {
+        return dashboards.size + 1.also {
             dashboards[it] = DataWebDashboard(targets, switchTimeSeconds, name, it)
         }
     }
@@ -55,11 +55,11 @@ class MemoryDashboardsRepository(
     companion object {
         fun create(delay: Long = 500) = MemoryDashboardsRepository(
             mutableMapOf(
-                "id1" to DataWebDashboard(
-                    listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 1", "id1"
+                1 to DataWebDashboard(
+                    listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 1", 1
                 ),
-                "id2" to DataWebDashboard(
-                    listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 2", "id2"
+                2 to DataWebDashboard(
+                    listOf("https://android.com", "https://google.com", "https://jetbrains.com"), 10, "Dashboard 2", 2
                 )
             ),
             delay = delay

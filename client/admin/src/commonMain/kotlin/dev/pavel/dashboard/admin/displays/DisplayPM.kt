@@ -25,7 +25,7 @@ class DisplayPM(
         val id: DisplayId?,
         val name: StringProperty,
         val description: StringProperty,
-        val dashboard: ListProperty<String>,
+        val dashboard: ListProperty<DashboardId>,
     ) : PmDescription {
         constructor(
             id: DisplayId? = null,

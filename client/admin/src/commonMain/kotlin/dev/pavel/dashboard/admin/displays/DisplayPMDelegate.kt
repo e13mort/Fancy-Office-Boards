@@ -28,7 +28,7 @@ class DisplayPMDelegate(
 
     override fun copy(item: DisplayPM.Description): DisplayPM.Description {
         return item.copy(
-            id = item.id.toString(),
+            id = item.id,
             name = StringProperty(item.name.value),
             description = StringProperty(item.description.value),
             dashboard = ListProperty(item.dashboard.value?.data, item.dashboard.listItems)

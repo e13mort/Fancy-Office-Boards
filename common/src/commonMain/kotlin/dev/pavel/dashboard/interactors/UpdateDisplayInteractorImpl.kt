@@ -18,7 +18,7 @@ class UpdateDisplayInteractorImpl(
 ) :
     UpdateDisplayInteractor {
     override suspend fun createOrUpdateDisplay(
-        id: String?,
+        id: DisplayId?,
         name: String,
         description: String,
         dashboardId: DashboardId?

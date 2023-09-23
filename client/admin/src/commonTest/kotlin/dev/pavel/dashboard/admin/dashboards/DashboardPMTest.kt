@@ -156,7 +156,7 @@ class DashboardPMTest {
 
     private fun testPMStates(
         description: PmDescription = DashboardPM.Description(
-            "existing",
+            0,
             "Test",
             0,
             listOf("first", "second", "third"),

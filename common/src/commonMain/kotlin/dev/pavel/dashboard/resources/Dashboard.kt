@@ -5,13 +5,14 @@
 
 package dev.pavel.dashboard.resources
 
+import dev.pavel.dashboard.entity.DashboardId
 import io.ktor.resources.Resource
 import kotlinx.serialization.Serializable
 
 @Resource("/dashboard")
 class Dashboard(@Suppress("unused") val parent: RestApi = RestApi()) {
     @Resource("{id}")
-    class Id(@Suppress("unused") val parent: Dashboard = Dashboard(), val id: String) {
+    class Id(@Suppress("unused") val parent: Dashboard = Dashboard(), val id: DashboardId) {
         @Resource("edit")
         class Update(val id: Id)
     }

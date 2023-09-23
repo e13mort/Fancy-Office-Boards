@@ -7,8 +7,8 @@ package dev.pavel.dashboard.entity
 
 import kotlinx.coroutines.flow.Flow
 
-typealias DisplayId = String
-typealias DashboardId = String
+typealias DisplayId = Int
+typealias DashboardId = Int
 
 interface Entities {
 

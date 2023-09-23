@@ -48,7 +48,7 @@ fun DisplayPM.Render() {
 }
 
 @Composable
-fun ListProperty<String>.Render(isActive: Boolean, containerStyle: StyleScope.() -> Unit = {}) {
+fun ListProperty<Int>.Render(isActive: Boolean, containerStyle: StyleScope.() -> Unit = {}) {
     Div(
         attrs = {
             style(containerStyle)
