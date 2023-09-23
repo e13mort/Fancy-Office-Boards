@@ -158,7 +158,8 @@ class DashboardPMTest {
         description: PmDescription = DashboardPM.Description(
             "existing",
             "Test",
-            listOf("first", "second", "third")
+            0,
+            listOf("first", "second", "third"),
         ), validate: suspend TurbineTestContext<State<DashboardPM.Description>>.() -> Unit
     ) =
         runPMTest(description) {
