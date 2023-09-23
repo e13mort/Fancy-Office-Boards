@@ -27,14 +27,23 @@ class MemoryDashboardsRepository(
         dashboards.remove(id)
     }
 
-    override suspend fun updateDashboard(id: DashboardId, targets: List<String>, name: String) {
+    override suspend fun updateDashboard(
+        id: DashboardId,
+        targets: List<String>,
+        name: String,
+        switchTimeoutSeconds: Int
+    ) {
         delay(delay)
-        dashboards[id] = DataWebDashboard(targets, 0, name, id)
+        dashboards[id] = DataWebDashboard(targets, switchTimeoutSeconds, name, id)
     }
 
-    override suspend fun createDashboard(targets: List<String>, name: String): DashboardId {
+    override suspend fun createDashboard(
+        targets: List<String>,
+        name: String,
+        switchTimeSeconds: Int
+    ): DashboardId {
         return "id${dashboards.size + 1}".also {
-            dashboards[it] = DataWebDashboard(targets, 0, name, it)
+            dashboards[it] = DataWebDashboard(targets, switchTimeSeconds, name, it)
         }
     }
 

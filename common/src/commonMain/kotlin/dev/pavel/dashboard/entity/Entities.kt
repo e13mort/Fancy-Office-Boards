@@ -40,9 +40,14 @@ interface DashboardRepository<T : Entities.Dashboard> {
 }
 
 interface WebPagesDashboardRepository : DashboardRepository<Entities.WebPagesDashboard> {
-    suspend fun updateDashboard(id: DashboardId, targets: List<String>, name: String)
+    suspend fun updateDashboard(
+        id: DashboardId,
+        targets: List<String>,
+        name: String,
+        switchTimeoutSeconds: Int
+    )
 
-    suspend fun createDashboard(targets: List<String>, name: String): DashboardId
+    suspend fun createDashboard(targets: List<String>, name: String, switchTimeSeconds: Int): DashboardId
 }
 
 interface DisplayRepository {

@@ -15,5 +15,6 @@ class Dashboard(@Suppress("unused") val parent: RestApi = RestApi()) {
 @Serializable
 data class UpdateContent(
     val items: List<String>,
-    val name: String
+    val name: String,
+    val switchTimeoutSeconds: Int
 )

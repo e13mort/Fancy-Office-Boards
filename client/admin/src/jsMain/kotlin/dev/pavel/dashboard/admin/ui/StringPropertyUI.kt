@@ -7,6 +7,7 @@ import dev.petuska.kmdc.textfield.MDCTextArea
 import dev.petuska.kmdc.textfield.MDCTextField
 import dev.petuska.kmdc.textfield.MDCTextFieldType
 import dev.petuska.kmdc.typography.MDCBody1
+import dev.petuska.kmdc.typography.MDCCaption
 import org.jetbrains.compose.web.css.padding
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Div
@@ -39,6 +40,38 @@ fun StringProperty.RenderAsTitle(
 
             false -> MDCBody1(value)
         }
+    }
+}
+@Composable
+fun StringProperty.RenderFormfield(
+    isActive: Boolean = false,
+    label: String = "Title"
+) {
+    Div(
+        attrs = {
+            style {
+                padding(4.px)
+            }
+        }
+    ) {
+        val currentNameValue = flow.collectAsState().value
+        val lastError = errors.collectAsState().value
+        if (lastError != null) {
+            Div {
+                MDCCaption(lastError)
+            }
+        }
+        MDCTextField(
+            value = currentNameValue,
+            label = label,
+            disabled = !isActive,
+            type = MDCTextFieldType.Outlined,
+            attrs = {
+                onInput { syntheticInputEvent ->
+                    value = syntheticInputEvent.value
+                }
+            }
+        )
     }
 }
 

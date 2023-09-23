@@ -1,6 +1,7 @@
 package dev.pavel.dashboard.admin.dashboards
 
 import dev.pavel.dashboard.admin.EditableCollectionChildPM
+import dev.pavel.dashboard.admin.properties.validation.PositiveIntValidator
 import dev.pavel.dashboard.admin.properties.StringProperty
 import dev.pavel.dashboard.entity.DashboardId
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,14 +22,18 @@ class DashboardPM(
     data class Description(
         val id: DashboardId?,
         val name: StringProperty,
+        val switchDelaySeconds: StringProperty,
         val targets: Targets = Targets
     ) : PmDescription {
         constructor(
             id: DashboardId? = null,
             name: String = "",
+            delaySeconds: Int = 60,
             targets: List<String> = emptyList()
         ) :
-                this(id, StringProperty(name), TargetsImpl(targets))
+                this(id, StringProperty(name), StringProperty(delaySeconds.toString(), listOf(
+                    PositiveIntValidator
+                )), TargetsImpl(targets))
     }
 
     enum class TargetAction {

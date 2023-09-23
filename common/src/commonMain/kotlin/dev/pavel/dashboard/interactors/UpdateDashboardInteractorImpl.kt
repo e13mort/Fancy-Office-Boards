@@ -10,9 +10,14 @@ class UpdateDashboardInteractorImpl(
     private val dashboardRepository: WebPagesDashboardRepository,
     private val backgroundDispatcher: CoroutineDispatcher
 ) : UpdateDashboardInteractor {
-    override suspend fun updateDashboard(id: DashboardId, targets: List<String>, name: String): Entities.WebPagesDashboard {
+    override suspend fun updateDashboard(
+        id: DashboardId,
+        targets: List<String>,
+        name: String,
+        switchDelaySeconds: Int
+    ): Entities.WebPagesDashboard {
         return withContext(backgroundDispatcher) {
-            dashboardRepository.updateDashboard(id, targets, name)
+            dashboardRepository.updateDashboard(id, targets, name, switchDelaySeconds)
             val updatedDashboard = dashboardRepository.findDashboardById(id)
             updatedDashboard ?: throw IllegalStateException("Failed to load updated dashboard info")
         }

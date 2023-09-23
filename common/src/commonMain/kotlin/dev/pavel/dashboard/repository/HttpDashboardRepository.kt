@@ -23,9 +23,14 @@ class HttpDashboardRepository(
     private val httpClient: HttpClient,
 ) : WebPagesDashboardRepository {
 
-    override suspend fun updateDashboard(id: DashboardId, targets: List<String>, name: String) {
+    override suspend fun updateDashboard(
+        id: DashboardId,
+        targets: List<String>,
+        name: String,
+        switchTimeoutSeconds: Int
+    ) {
         val updateContent = UpdateContent(
-            targets, name
+            targets, name, switchTimeoutSeconds
         )
         val updateResource = Dashboard.Id.Update(id = Dashboard.Id(id = id))
         httpClient.put(httpClient.href(updateResource)) {
@@ -34,9 +39,13 @@ class HttpDashboardRepository(
         }
     }
 
-    override suspend fun createDashboard(targets: List<String>, name: String): DashboardId {
+    override suspend fun createDashboard(
+        targets: List<String>,
+        name: String,
+        switchTimeSeconds: Int
+    ): DashboardId {
         val updateContent = UpdateContent(
-            targets, name
+            targets, name, switchTimeSeconds
         )
         val urlString = httpClient.href(Dashboard())
         val httpResponse = httpClient.post(urlString) {

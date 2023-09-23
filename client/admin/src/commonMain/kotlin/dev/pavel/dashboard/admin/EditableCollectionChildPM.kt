@@ -1,5 +1,7 @@
 package dev.pavel.dashboard.admin
 
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,6 +25,7 @@ abstract class EditableCollectionChildPM<T>(
 
     private var activeData = delegate.create(pmParams.description)
     private var originalData = delegate.copy(activeData)
+    private var editTransitionJob: Job? = null
 
     private val states: MutableStateFlow<State<T>> = MutableStateFlow(createFirstState())
 
@@ -37,14 +40,33 @@ abstract class EditableCollectionChildPM<T>(
         scope.launch {
             val value = states.value.item
             states.value = State.Saving(value)
+            val view = trySaveData(value)
+            states.value = view
+        }
+    }
+
+    private suspend fun trySaveData(value: T): State<T> {
+        return try {
             val updateValue = delegate.save(value)
             activeData = updateValue
             originalData = delegate.copy(updateValue)
-            states.value = State.View(updateValue, this@EditableCollectionChildPM)
+            State.View(updateValue, this)
+        } catch (e: Exception) {
+            scheduleEditTransition()
+            State.Edit(states.value.item, this, activeError = true)
+        }
+    }
+
+    private fun scheduleEditTransition() {
+        editTransitionJob?.cancel()
+        editTransitionJob = scope.launch {
+            delay(2000)
+            states.value = State.Edit(states.value.item, this@EditableCollectionChildPM)
         }
     }
 
     internal fun cancel() {
+        editTransitionJob?.cancel()
         if (delegate.isNew(activeData)) {
             messageHandler.send(BackMessage)
         } else {
@@ -94,7 +116,8 @@ abstract class EditableCollectionChildPM<T>(
         class Edit<T>(
             item: T,
             private val host: EditableCollectionChildPM<T>,
-            val showDeleteDialog: Boolean = false
+            val showDeleteDialog: Boolean = false,
+            val activeError: Boolean = false
         ) : State<T>(item) {
             val isNew: Boolean = host.delegate.isNew(host.activeData)
             fun cancel() {

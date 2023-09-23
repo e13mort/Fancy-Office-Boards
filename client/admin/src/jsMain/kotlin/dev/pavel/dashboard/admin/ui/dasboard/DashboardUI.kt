@@ -6,6 +6,7 @@ import dev.pavel.dashboard.admin.dashboards.DashboardPM
 import dev.pavel.dashboard.admin.ui.CardButton
 import dev.pavel.dashboard.admin.ui.RenderCollection
 import dev.pavel.dashboard.admin.ui.RenderAsTitle
+import dev.pavel.dashboard.admin.ui.RenderFormfield
 import dev.petuska.kmdc.button.Icon
 import dev.petuska.kmdc.button.Label
 import dev.petuska.kmdc.button.MDCButton
@@ -24,6 +25,7 @@ fun DashboardPM.Render() {
     RenderCollection { isActive ->
         name.RenderAsTitle(isActive)
         targets.RenderLinks(isActive)
+        switchDelaySeconds.RenderFormfield(isActive, "Timeout (s)")
     }
 }
 

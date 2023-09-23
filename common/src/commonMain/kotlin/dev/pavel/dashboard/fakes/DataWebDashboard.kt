@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class DataWebDashboard(
     private val targets: List<String>,
-    private val timeout: Int,
+    private val switchTimeoutSeconds: Int,
     private val name: String,
     private val id: String
 ) : Entities.WebPagesDashboard {
@@ -16,7 +16,7 @@ class DataWebDashboard(
     }
 
     override fun switchTimeoutSeconds(): Int {
-        return timeout
+        return switchTimeoutSeconds
     }
 
     override fun name(): String {

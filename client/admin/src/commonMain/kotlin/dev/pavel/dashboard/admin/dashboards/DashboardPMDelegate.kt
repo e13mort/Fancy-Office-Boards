@@ -1,7 +1,7 @@
 package dev.pavel.dashboard.admin.dashboards
 
 import dev.pavel.dashboard.admin.EditableCollectionChildPM
-import dev.pavel.dashboard.admin.properties.StringProperty
+import dev.pavel.dashboard.admin.properties.copy
 import dev.pavel.dashboard.interactors.CreateDashboardInteractor
 import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
 import me.dmdev.premo.PmDescription
@@ -22,8 +22,9 @@ class DashboardPMDelegate(
     override fun copy(item: DashboardPM.Description): DashboardPM.Description {
         return item.copy(
             id = item.id.toString(),
-            name = StringProperty(item.name.value),
-            targets = DashboardPM.TargetsImpl(item.targets.states.value.toTargets())
+            name = item.name.copy(),
+            targets = DashboardPM.TargetsImpl(item.targets.states.value.toTargets()),
+            switchDelaySeconds = item.switchDelaySeconds.copy()
         )
 
     }
@@ -35,15 +36,17 @@ class DashboardPMDelegate(
             updateDashboardInteractor.updateDashboard(
                 id,
                 value.toTargets(),
-                item.name.value
+                item.name.value,
+                item.switchDelaySeconds.value.toInt()
             )
         } else {
             createDashboardInteractor.createDashboard(
                 value.toTargets(),
-                item.name.value
+                item.name.value,
+                item.switchDelaySeconds.value.toInt()
             )
         }
-        return DashboardPM.Description(dashboard.id(), dashboard.name(), dashboard.targets())
+        return DashboardPM.Description(dashboard.id(), dashboard.name(), dashboard.switchTimeoutSeconds(), dashboard.targets())
     }
 
     override fun isNew(item: DashboardPM.Description): Boolean {

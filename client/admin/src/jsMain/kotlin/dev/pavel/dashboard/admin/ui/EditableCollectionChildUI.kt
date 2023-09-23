@@ -13,6 +13,8 @@ import dev.petuska.kmdc.dialog.MDCDialog
 import dev.petuska.kmdc.dialog.onClosed
 import dev.petuska.kmdc.elevation.MDCElevation
 import dev.petuska.kmdc.linear.progress.MDCLinearProgress
+import dev.petuska.kmdc.snackbar.Label
+import dev.petuska.kmdc.snackbar.MDCSnackbar
 import dev.petuska.kmdcx.icons.MDCIcon
 import dev.petuska.kmdcx.icons.mdcIcon
 import org.jetbrains.compose.web.attributes.disabled
@@ -72,12 +74,19 @@ private fun EditableCollectionChildPM.State<*>.RenderButtons() {
                 }) { value.delete(EditableCollectionChildPM.DeleteAction.Request) }
                 RenderDeleteDialog(value)
             }
+            RenderError(value)
         }
-
         is EditableCollectionChildPM.State.Saving -> {
             RenderButton(CardButton.Updating, true) { }
         }
     }
+}
+
+@Composable
+private fun RenderError(value: EditableCollectionChildPM.State.Edit<*>) {
+    MDCSnackbar(open = value.activeError, timeoutMs = null, content = {
+        Label("An error occurred")
+    })
 }
 
 @Composable

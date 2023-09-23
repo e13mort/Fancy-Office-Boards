@@ -20,7 +20,7 @@ class DashboardsPM(
         return if (model == null) {
             DashboardPM.Description()
         } else {
-            DashboardPM.Description(model.id(), model.name(), model.targets())
+            DashboardPM.Description(model.id(), model.name(), model.switchTimeoutSeconds(), model.targets())
         }
     }
 }

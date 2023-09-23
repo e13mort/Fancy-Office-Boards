@@ -46,13 +46,22 @@ fun Application.installRestApi(authProviderName: String) {
             put<Dashboard.Id.Update> { updateInfo ->
                 val id = updateInfo.id.id
                 val updateContent = call.receive<UpdateContent>()
-                dashboardsRepository.updateDashboard(id, updateContent.items, updateContent.name)
+                dashboardsRepository.updateDashboard(
+                    id,
+                    updateContent.items,
+                    updateContent.name,
+                    updateContent.switchTimeoutSeconds
+                )
                 call.respond(HttpStatusCode.OK)
             }
             post<Dashboard> {
                 val updateContent = call.receive<UpdateContent>()
                 val newDashboardId =
-                    dashboardsRepository.createDashboard(updateContent.items, updateContent.name)
+                    dashboardsRepository.createDashboard(
+                        updateContent.items,
+                        updateContent.name,
+                        updateContent.switchTimeoutSeconds
+                    )
                 call.respond(HttpStatusCode.Created, newDashboardId)
             }
             put<Display.Id.Update> { updateInfo ->

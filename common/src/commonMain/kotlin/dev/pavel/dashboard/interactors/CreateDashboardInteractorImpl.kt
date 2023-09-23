@@ -12,10 +12,11 @@ class CreateDashboardInteractorImpl(
 ) : CreateDashboardInteractor {
     override suspend fun createDashboard(
         targets: List<String>,
-        name: String
+        name: String,
+        switchDelaySeconds: Int
     ): Entities.WebPagesDashboard {
         return withContext(CoroutineScope(backgroundDispatcher).coroutineContext) {
-            val id = dashboardRepository.createDashboard(targets, name)
+            val id = dashboardRepository.createDashboard(targets, name, switchDelaySeconds)
             val createdDashboard = dashboardRepository.findDashboardById(id)
             createdDashboard ?: throw IllegalStateException("Failed to load created dashboard info")
         }

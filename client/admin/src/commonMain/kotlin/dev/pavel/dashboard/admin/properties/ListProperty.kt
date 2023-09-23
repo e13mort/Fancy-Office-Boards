@@ -7,7 +7,7 @@ class ListProperty<T>(
     AbstractViewProperty<ListProperty.ListItem<T>?>(
         listItems.firstOrNull {
             initValue != null && it.data == initValue
-        }
+        }, emptyList()
     ) {
     data class ListItem<T>(
         val name: String,

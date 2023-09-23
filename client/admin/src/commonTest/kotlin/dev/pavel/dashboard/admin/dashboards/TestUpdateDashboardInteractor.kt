@@ -6,7 +6,7 @@ import dev.pavel.dashboard.interactors.UpdateDashboardInteractor
 
 internal class TestUpdateDashboardInteractor : UpdateDashboardInteractor {
     override suspend fun updateDashboard(
-        id: String, targets: List<String>, name: String
+        id: String, targets: List<String>, name: String, switchDelaySeconds: Int
     ): Entities.WebPagesDashboard {
         TODO("Not yet implemented")
     }
