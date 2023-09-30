@@ -1,0 +1,16 @@
+<!--
+  ~ # Copyright: (c) 2023, Pavel Novikov <mail@pavel.dev>
+  ~ # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+  -->
+
+<component name="ProjectRunConfigurationManager">
+    <configuration name="Run Backend via IDE" default="false" type="JetRunConfigurationType">
+        <option name="MAIN_CLASS_NAME" value="dev.pavel.dashboard.ApplicationKt" />
+        <module name="Dashboard.backend.jvmMain" />
+        <shortenClasspath name="NONE" />
+        <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend" />
+        <method v="2">
+            <option name="Make" enabled="true" />
+        </method>
+    </configuration>
+</component>
