@@ -60,17 +60,20 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.sqldelight.coroutines)
                 implementation(project(":common"))
+                implementation(project(":db"))
             }
         }
         val jvmMain by getting {
             dependencies {
                 implementation(libs.sqldelight.driver.jvm)
+                implementation(libs.sqlite.jdbc) //explicit declaration in order to run backend from IDE
                 implementation(libs.ktor.server.netty)
                 implementation(libs.ktor.builder.html)
                 implementation(libs.ktor.server.auth)
                 implementation(libs.ktor.server.content.negotiation)
                 implementation(libs.ktor.server.resources)
                 implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.logback)
             }
         }
 

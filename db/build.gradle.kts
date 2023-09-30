@@ -7,55 +7,52 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
     jvm {
         withJava()
     }
-    js(IR) {
-        browser()
-    }
 
     sourceSets {
         /* Main source sets */
         val commonMain by getting {
             dependencies {
-                api(libs.kotlinx.coroutines.core)
-                api(libs.touchlab.kermit)
-                implementation(libs.ktor.client.core)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.sqldelight.coroutines)
                 implementation(libs.kotlinx.serialization.json)
-                implementation(libs.kotlinx.datetime)
-                implementation(libs.ktor.client.resources)
-                api(libs.ktor.resources)
+                implementation(project(":common"))
             }
         }
         val jvmMain by getting {
             dependencies {
-                implementation(libs.ktor.server.netty)
-            }
-        }
-        val jsMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.js)
+                api(libs.sqldelight.driver.jvm)
             }
         }
 
         /* Main hierarchy */
         jvmMain.dependsOn(commonMain)
-        jsMain.dependsOn(commonMain)
 
         /* Test source sets */
         val commonTest by getting {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.turbine)
             }
         }
         val jvmTest by getting
-        val jsTest by getting
 
         /* Test hierarchy */
         jvmTest.dependsOn(commonTest)
-        jsTest.dependsOn(commonTest)
+    }
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("dev.pavel.dashboard.db")
+        }
     }
 }

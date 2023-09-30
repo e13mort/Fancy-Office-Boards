@@ -5,8 +5,10 @@
 
 package dev.pavel.dashboard
 
-import dev.pavel.dashboard.fakes.MemoryDashboardsRepository
-import dev.pavel.dashboard.fakes.MemoryDisplayRepository
+import dev.pavel.dashboard.db.DBDisplayRepository
+import dev.pavel.dashboard.db.DBWebDashboardRepository
+import dev.pavel.dashboard.db.DriverFactory
+import dev.pavel.dashboard.db.createDatabase
 import dev.pavel.dashboard.resources.Dashboard
 import dev.pavel.dashboard.resources.Display
 import dev.pavel.dashboard.resources.UpdateContent
@@ -24,8 +26,10 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 
 fun Application.installRestApi(authProviderName: String) {
-    val dashboardsRepository = MemoryDashboardsRepository.create(0) //todo: use persisted storage
-    val displayRepository = MemoryDisplayRepository()
+    val driverFactory = DriverFactory.persistent("data.db") // todo: read from parameters
+    val database = createDatabase(driverFactory)
+    val dashboardsRepository = DBWebDashboardRepository(database.dashboardQueries)
+    val displayRepository = DBDisplayRepository(database.displayQueries)
     routing {
         get<Dashboard.Id> { dashboard ->
             val webPagesDashboard = dashboardsRepository.findDashboardById(dashboard.id)

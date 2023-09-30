@@ -1,13 +1,14 @@
 [versions]
 
 kotlin = "1.8.22"
-kotlinx-coroutines = "1.6.4"
+kotlinx-coroutines = "1.7.3"
 kotlinx-serialization = "1.4.1"
 kotlinx-datetime = "0.4.0"
 ktor = "2.3.3"
 plugin-docker = "0.22.1"
 plugin-compose-desktop = "1.4.3"
 premo = "1.0.0-alpha.08"
+sqldelight = "2.0.0"
 
 [libraries]
 kotlin-test-annotations-common = { module = "org.jetbrains.kotlin:kotlin-test-annotations-common", version.ref = "kotlin" }
@@ -38,18 +39,20 @@ ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor"
 ktor-websockets = { module = "io.ktor:ktor-websockets", version.ref = "ktor" }
 ktor-builder-html = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
 touchlab-kermit = "co.touchlab:kermit:1.2.2"
-sqldelight-driver-jvm = "com.squareup.sqldelight:sqlite-driver:1.5.5"
-sqldelight-coroutines = "com.squareup.sqldelight:coroutines-extensions:1.5.5"
+sqldelight-driver-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+sqlite-jdbc = "org.xerial:sqlite-jdbc:3.42.0.0"
 kmdc = "dev.petuska:kmdc:0.1.1"
 kmdcx = "dev.petuska:kmdcx:0.1.1"
 premo-main = { module = "me.dmdev.premo:premo", version.ref = "premo" }
 premo-navigation = { module = "me.dmdev.premo:premo-navigation", version.ref = "premo" }
 turbine = "app.cash.turbine:turbine:1.0.0"
+logback = "ch.qos.logback:logback-classic:1.4.11"
 
 [plugins]
 
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 docker = { id = "com.palantir.docker", version.ref = "plugin-docker" }
-sqldelight = { id = "app.cash.sqldelight", version = "2.0.0" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 compose-desktop = { id = "org.jetbrains.compose", version.ref = "plugin-compose-desktop" }

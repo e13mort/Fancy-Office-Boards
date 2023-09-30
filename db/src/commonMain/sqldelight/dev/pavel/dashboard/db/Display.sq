@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS DBDisplay (
+    id INTEGER PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    dashboard_id INTEGER,
+    FOREIGN KEY (dashboard_id) REFERENCES DBWebDashboard (id) ON DELETE SET DEFAULT
+);
+
+selectAll:
+SELECT * FROM DBDisplay;
+
+insert:
+INSERT INTO DBDisplay (name, description, dashboard_id)
+VALUES (?, ?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid() FROM DBDisplay;
+
+delete:
+DELETE FROM DBDisplay WHERE id = ?;
+
+update:
+UPDATE DBDisplay SET (name, description, dashboard_id) = (?, ?, ?) WHERE id == :id;

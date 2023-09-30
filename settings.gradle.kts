@@ -4,7 +4,7 @@
  */
 
 rootProject.name = "Dashboard"
-include(":common", ":client:web", ":backend", ":client:admin")
+include(":common", ":client:web", ":backend", ":client:admin", ":db")
 
 pluginManagement {
     repositories {

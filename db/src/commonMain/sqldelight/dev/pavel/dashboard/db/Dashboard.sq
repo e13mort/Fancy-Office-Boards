@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS DBWebDashboard (
+    id INTEGER PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    switchTimeoutSeconds INTEGER NOT NULL,
+    targets TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM DBWebDashboard;
+
+insert:
+INSERT INTO DBWebDashboard (name, switchTimeoutSeconds, targets)
+VALUES (?, ?, ?);
+
+lastInsertRowId:
+SELECT last_insert_rowid() FROM DBWebDashboard;
+
+find:
+SELECT * FROM DBWebDashboard WHERE id = ?;
+
+delete:
+DELETE FROM DBWebDashboard WHERE id = ?;
+
+update:
+UPDATE DBWebDashboard SET (name, switchTimeoutSeconds, targets) = (?, ?, ?) WHERE id == :id;
