@@ -25,6 +25,13 @@ val adminDist by configurations.creating {
 }
 
 kotlin {
+    targets.all {
+        compilations.all {
+            compilerOptions.configure {
+                jvmToolchain(11)
+            }
+        }
+    }
     jvm {
         withJava()
         dependencies {

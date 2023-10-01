@@ -11,6 +11,13 @@ plugins {
 }
 
 kotlin {
+    targets.all {
+        compilations.all {
+            compilerOptions.configure {
+                jvmToolchain(11)
+            }
+        }
+    }
     jvm {
         withJava()
     }
