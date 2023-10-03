@@ -25,8 +25,8 @@ import io.ktor.server.resources.put
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 
-fun Application.installRestApi(authProviderName: String) {
-    val driverFactory = DriverFactory.persistent("data.db") // todo: read from parameters
+fun Application.installRestApi(authProviderName: String, dbFileName: String) {
+    val driverFactory = DriverFactory.persistent(dbFileName)
     val database = createDatabase(driverFactory)
     val dashboardsRepository = DBWebDashboardRepository(database.dashboardQueries)
     val displayRepository = DBDisplayRepository(database.displayQueries)

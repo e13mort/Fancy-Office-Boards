@@ -20,6 +20,9 @@ import io.ktor.server.resources.Resources
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import java.nio.file.Paths
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isWritable
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -30,7 +33,7 @@ fun Application.module() {
     install(ContentNegotiation) {
         json()
     }
-    installRestApi(authProviderName)
+    installRestApi(authProviderName, prepareDBFile())
     routing {
         staticResources("scripts", "scripts")
         staticResources("static", "static")
@@ -64,6 +67,16 @@ fun Application.readAdminCredentialsFromEnv(): Pair<String, String> {
             propertyOrNull("ktor.adminBasicAuth.password")?.getString() ?: "",
         )
     }
+}
+
+private fun Application.prepareDBFile(): String {
+    val dataDir = environment.config.property(PROPERTY_DATA_DIR)
+    val dirPath = Paths.get(dataDir.getString())
+    if (!dirPath.isDirectory() || !dirPath.isWritable()) {
+        throw IllegalArgumentException("$dirPath should be writable directory")
+    }
+    val dbFileName = environment.config.property(PROPERTY_DB_FILE_NAME).getString()
+    return dirPath.resolve(dbFileName).toString()
 }
 
 fun Route.registerPage(route: String, pageTitle: String, scriptName: String) {
