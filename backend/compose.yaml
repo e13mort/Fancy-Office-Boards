@@ -1,0 +1,9 @@
+version: "3.3"
+services:
+  dashboards-backend:
+    image: "${DASHBOARDS_IMAGE_NAME}"
+    ports:
+      - "${DASHBOARDS_PORT}:8080"
+    volumes:
+      - $DASHBOARDS_HOST_WORK_DIR:/dashboard/dashboards-data
+    restart: unless-stopped

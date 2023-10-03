@@ -1,3 +1,4 @@
 /build
 dashboards-data/*
 !dashboards-data/content.txt
+.env
