@@ -7,13 +7,14 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.docker)
     application
     `maven-publish`
 }
 
 /* required for maven publication */
 group = "dev.pavel.dashboard"
-version = "0.1"
+version = project.property("backend.version").toString()
 
 val mainUIDist by configurations.creating {
     isCanBeConsumed = false
@@ -102,6 +103,17 @@ kotlin {
 
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
+}
+
+docker {
+    files(tasks.installDist.get())
+    setDockerfile(File("gradle.Dockerfile"))
+    name = "docker.io/e13mort/fancy-dashboards"
+    if (project.property("backend.buildMultiArchAndPush").toString().toBoolean()) {
+        platform("linux/amd64", "linux/arm64")
+        buildx(true)
+        push(true)
+    }
 }
 
 createCopyWebArtifactsTask(mainUIDist)
