@@ -27,6 +27,8 @@ kotlin {
             dependencies {
                 implementation(project(":common"))
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.premo.main)
+                implementation(libs.premo.navigation)
             }
         }
         val jsMain by getting {

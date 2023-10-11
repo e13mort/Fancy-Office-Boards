@@ -8,9 +8,11 @@ package dev.pavel.dashboard.client
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import dev.pavel.dashboard.pm.DisplayListPM
+import dev.pavel.dashboard.WebClientApp
+import dev.pavel.dashboard.pm.WebPagesDashboardPM
 import dev.pavel.dashboard.entity.DashboardId
-import dev.pavel.dashboard.entity.Presenter
-import dev.pavel.dashboard.entity.StubPresenter
+import dev.pavel.dashboard.entity.Entities
 import dev.pavel.dashboard.repository.HttpDashboardRepository
 import dev.pavel.dashboard.repository.HttpDisplayRepository
 import dev.petuska.kmdc.card.MDCCard
@@ -29,7 +31,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.resources.Resources
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.browser.window
-import kotlinx.coroutines.Dispatchers
+import me.dmdev.premo.PresentationModel
 import org.jetbrains.compose.web.css.Position
 import org.jetbrains.compose.web.css.height
 import org.jetbrains.compose.web.css.paddingLeft
@@ -49,29 +51,59 @@ fun main() {
     val httpClient = createHttpClient()
     val displayRepository = HttpDisplayRepository(httpClient)
     val dashboardRepository = HttpDashboardRepository(httpClient)
-    val presenter = StubPresenter(
-        displayRepository, dashboardRepository,
-        Dispatchers.Main
-    )
+    val appPM = WebClientApp.createPMDelegate(
+        WebClientApp.Dependencies(displayRepository, dashboardRepository)
+    ).let {
+        it.onCreate()
+        it.onForeground()
+        it.presentationModel
+    }
     renderComposable(rootElementId = "root") {
-        LaunchedEffect(Unit) {
-            presenter.start()
-        }
-        when(val uiStateState = presenter.observeUIStates().collectAsState().value) {
-            is Presenter.UIState.Error -> ShowError(uiStateState)
-            Presenter.UIState.Loading -> ShowLoading()
-            is Presenter.UIState.WebPage -> ShowPage(uiStateState)
-            is Presenter.UIState.Displays -> ShowDisplays(uiStateState) { id ->
-                presenter.onDisplaySelected(id)
-            }
+        when (val currentPM = appPM.navigation.currentTopFlow.collectAsState().value) {
+            is PresentationModel -> currentPM.Render()
+            else -> ShowLoading()
         }
     }
 }
 
 @Composable
-fun ShowDisplays(value: Presenter.UIState.Displays, click: (DashboardId?) -> Unit) {
+fun PresentationModel.Render() {
+    when (this) {
+        is DisplayListPM -> Render()
+        is WebPagesDashboardPM -> Render()
+    }
+}
+
+@Composable
+fun DisplayListPM.Render() {
+    LaunchedEffect(this) {
+        load()
+    }
+    val activeDisplays = displays.collectAsState().value
+    if (activeDisplays.isEmpty()) {
+        ShowLoading()
+    } else {
+        ShowDisplays(activeDisplays) {
+            onDashboardSelected(it)
+        }
+    }
+}
+
+@Composable
+fun WebPagesDashboardPM.Render() {
+    LaunchedEffect(this) {
+        start()
+    }
+    when (val uiState = currentPage.collectAsState().value) {
+        WebPagesDashboardPM.WebPagesUIState.Error -> ShowError()
+        WebPagesDashboardPM.WebPagesUIState.Loading -> ShowLoading()
+        is WebPagesDashboardPM.WebPagesUIState.WebPage -> ShowPage(uiState.link)
+    }
+}
+
+@Composable
+fun ShowDisplays(items: List<Entities.Display>, click: (DashboardId) -> Unit) {
     MDCLayoutGrid {
-        val items = value.displays
         val rows = items.windowed(2, 2, true)
         rows.forEach { row ->
             Cells {
@@ -82,8 +114,10 @@ fun ShowDisplays(value: Presenter.UIState.Displays, click: (DashboardId?) -> Uni
                         ) {
                             PrimaryAction(
                                 attrs = {
-                                    onClick {
-                                        click(item.dashboardId())
+                                    item.dashboardId()?.let { id ->
+                                        onClick {
+                                            click(id)
+                                        }
                                     }
                                 }
                             ) {
@@ -115,16 +149,16 @@ fun ShowDisplays(value: Presenter.UIState.Displays, click: (DashboardId?) -> Uni
 }
 
 @Composable
-fun ShowError(uiState: Presenter.UIState.Error) {
+fun ShowError() {
     H1 {
-        Text("Error: ${uiState.type}")
+        Text("Error")
     }
 }
 
 @Composable
-fun ShowPage(value: Presenter.UIState.WebPage) {
+fun ShowPage(value: String) {
     Iframe(attrs = {
-        attr("src", value.path)
+        attr("src", value)
         style {
             width(100.percent)
             height(100.percent)
