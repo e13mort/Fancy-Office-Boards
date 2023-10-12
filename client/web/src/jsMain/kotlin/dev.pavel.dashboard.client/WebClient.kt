@@ -8,11 +8,11 @@ package dev.pavel.dashboard.client
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import dev.pavel.dashboard.pm.DisplayListPM
 import dev.pavel.dashboard.WebClientApp
-import dev.pavel.dashboard.pm.WebPagesDashboardPM
 import dev.pavel.dashboard.entity.DashboardId
 import dev.pavel.dashboard.entity.Entities
+import dev.pavel.dashboard.pm.DisplayListPM
+import dev.pavel.dashboard.pm.WebPagesDashboardPM
 import dev.pavel.dashboard.repository.HttpDashboardRepository
 import dev.pavel.dashboard.repository.HttpDisplayRepository
 import dev.petuska.kmdc.card.MDCCard
@@ -20,11 +20,16 @@ import dev.petuska.kmdc.card.MDCCardMediaType
 import dev.petuska.kmdc.card.MDCCardType
 import dev.petuska.kmdc.card.Media
 import dev.petuska.kmdc.card.PrimaryAction
+import dev.petuska.kmdc.fab.MDCFab
+import dev.petuska.kmdc.fab.MDCFabType
 import dev.petuska.kmdc.layout.grid.Cell
 import dev.petuska.kmdc.layout.grid.Cells
 import dev.petuska.kmdc.layout.grid.MDCLayoutGrid
 import dev.petuska.kmdc.typography.MDCH4
 import dev.petuska.kmdc.typography.MDCSubtitle1
+import dev.petuska.kmdcx.icons.MDCIcon
+import dev.petuska.kmdcx.icons.MDCIconBase
+import dev.petuska.kmdcx.icons.MDCIconType
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -32,6 +37,7 @@ import io.ktor.client.plugins.resources.Resources
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.browser.window
 import me.dmdev.premo.PresentationModel
+import me.dmdev.premo.navigation.back
 import org.jetbrains.compose.web.css.Position
 import org.jetbrains.compose.web.css.height
 import org.jetbrains.compose.web.css.paddingLeft
@@ -97,7 +103,9 @@ fun WebPagesDashboardPM.Render() {
     when (val uiState = currentPage.collectAsState().value) {
         WebPagesDashboardPM.WebPagesUIState.Error -> ShowError()
         WebPagesDashboardPM.WebPagesUIState.Loading -> ShowLoading()
-        is WebPagesDashboardPM.WebPagesUIState.WebPage -> ShowPage(uiState.link)
+        is WebPagesDashboardPM.WebPagesUIState.WebPage -> ShowPage(uiState.link) {
+            back()
+        }
     }
 }
 
@@ -156,7 +164,23 @@ fun ShowError() {
 }
 
 @Composable
-fun ShowPage(value: String) {
+fun ShowPage(value: String, click: () -> Unit) {
+    MDCFab(type = MDCFabType.Mini, attrs = {
+        attr("aria-label", "Displays")
+        style {
+            position(Position.Absolute)
+            property("z-index", 2)
+        }
+        onClick {
+            click()
+        }
+    }) {
+        MDCIcon(
+            base = MDCIconBase.Span,
+            type = MDCIconType.Filled,
+            icon = MDCIcon.List,
+        )
+    }
     Iframe(attrs = {
         attr("src", value)
         style {
