@@ -36,6 +36,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.resources.Resources
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.browser.window
+import kotlinx.coroutines.delay
 import me.dmdev.premo.PresentationModel
 import me.dmdev.premo.navigation.back
 import org.jetbrains.compose.web.css.Position
@@ -46,11 +47,15 @@ import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.position
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.width
+import org.jetbrains.compose.web.dom.DOMScope
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.H1
 import org.jetbrains.compose.web.dom.Iframe
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.renderComposable
+import org.w3c.dom.Element
+
+private const val WATCHDOG_DELAY_MINUTES = 10
 
 fun main() {
     val httpClient = createHttpClient()
@@ -64,6 +69,7 @@ fun main() {
             is PresentationModel -> currentPM.Render()
             else -> ShowLoading()
         }
+        ScheduleWatchdog()
     }
 }
 
@@ -190,6 +196,16 @@ fun ShowPage(value: String, click: () -> Unit) {
 private fun ShowLoading() {
     H1 {
         Text("Loading...")
+    }
+}
+
+// this is a dumb temporal solution to prevent locked failed app state
+// correct solution will be implemented later with constant web-socket connection
+@Composable
+private fun DOMScope<Element>.ScheduleWatchdog() {
+    LaunchedEffect(this) {
+        delay((WATCHDOG_DELAY_MINUTES * 60 * 1000).toLong())
+        window.location.reload()
     }
 }
 
