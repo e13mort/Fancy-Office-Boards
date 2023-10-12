@@ -23,10 +23,11 @@ import me.dmdev.premo.PmFactory
 import me.dmdev.premo.PmMessage
 import me.dmdev.premo.PmMessageHandler
 import me.dmdev.premo.PmParams
-import me.dmdev.premo.PmStateSaver
 import me.dmdev.premo.PresentationModel
 import me.dmdev.premo.navigation.MasterDetailNavigation
 import me.dmdev.premo.onMessage
+import me.dmdev.premo.saver.PmStateSaver
+import me.dmdev.premo.saver.PmStateSaverFactory
 import kotlin.reflect.KType
 
 class AdminPM(params: PmParams) : PresentationModel(params) {
@@ -50,7 +51,7 @@ class AdminPM(params: PmParams) : PresentationModel(params) {
     )
 
     val navigation = MasterDetailNavigation<AdminMasterPM, PresentationModel>(
-        masterPmDescription = AdminMasterPM.Description
+        masterDescription = AdminMasterPM.Description
     ) { navigator ->
         onMessage<ShowDisplays> {
             navigator.changeDetail(Child(DisplaysPM.Description))
@@ -115,13 +116,17 @@ object Admin {
     fun createPMDelegate(dependencies: Dependencies) : PmDelegate<AdminPM> {
         return PmDelegate(
             pmParams = PmParams(
-                tag = "AdminPM",
                 description = AdminPM.Description,
                 parent = null,
                 factory = AdminPMFactory(
                     dependencies
                 ),
-                stateSaverFactory = { EmptyPMStateSaver }
+                stateSaverFactory = object : PmStateSaverFactory {
+                    override fun createPmStateSaver(key: String): PmStateSaver = EmptyPMStateSaver
+
+                    override fun deletePmStateSaver(key: String) = Unit
+
+                }
             )
         )
     }

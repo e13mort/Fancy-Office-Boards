@@ -53,17 +53,12 @@ import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.renderComposable
 
 fun main() {
-
     val httpClient = createHttpClient()
     val displayRepository = HttpDisplayRepository(httpClient)
     val dashboardRepository = HttpDashboardRepository(httpClient)
     val appPM = WebClientApp.createPMDelegate(
         WebClientApp.Dependencies(displayRepository, dashboardRepository)
-    ).let {
-        it.onCreate()
-        it.onForeground()
-        it.presentationModel
-    }
+    ).presentationModel
     renderComposable(rootElementId = "root") {
         when (val currentPM = appPM.navigation.currentTopFlow.collectAsState().value) {
             is PresentationModel -> currentPM.Render()

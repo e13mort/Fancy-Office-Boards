@@ -29,6 +29,8 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.premo.main)
                 implementation(libs.premo.navigation)
+                implementation(libs.premo.saver.json)
+                implementation(libs.ktor.client.resources)
             }
         }
         val jsMain by getting {
