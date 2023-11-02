@@ -63,8 +63,8 @@ fun Application.readAdminCredentialsFromEnv(): Pair<String, String> {
     // (installDist, run with /bin/backend -P:ktor.adminBasicAuth.userName=*** -P:ktor.adminBasicAuth.password=*** )
     return environment.config.run {
         Pair(
-            propertyOrNull("ktor.adminBasicAuth.userName")?.getString() ?: "",
-            propertyOrNull("ktor.adminBasicAuth.password")?.getString() ?: "",
+            property(PROPERTY_ADMIN_USERNAME).getString(),
+            property(PROPERTY_ADMIN_PASSWORD).getString(),
         )
     }
 }

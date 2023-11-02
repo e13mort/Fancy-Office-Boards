@@ -1,0 +1,34 @@
+- name: Deploy Fancy-Boards
+  hosts: "{{ lookup('ansible.builtin.env', 'DASHBOARDS_BACKEND_TARGET') }}"
+  vars:
+    project_root: ~/fancy-dashboards/docker
+    proxy_env:
+      DASHBOARDS_IMAGE_NAME: "{{ lookup('ansible.builtin.env', 'DASHBOARDS_IMAGE_NAME', default='unknown') }}"
+      DASHBOARDS_HOST_WORK_DIR: "/home/fancy-dashboards"
+      DASHBOARDS_PORT: "{{ lookup('ansible.builtin.env', 'DASHBOARDS_PORT') }}"
+      DASHBOARDS_ADMIN_USERNAME: "{{ lookup('ansible.builtin.env', 'DASHBOARDS_ADMIN_USERNAME') }}"
+      DASHBOARDS_ADMIN_PASSWORD: "{{ lookup('ansible.builtin.env', 'DASHBOARDS_ADMIN_PASSWORD') }}"
+  tasks:
+    - name: Print env
+      ansible.builtin.debug:
+        msg: "Proxy: {{ proxy_env }}"
+    - name: ensures {{ project_root }} dir exists
+      file:
+        path: "{{ project_root }}"
+        state: directory
+    - name: copy Docker Compose files
+      copy:
+        src: "{{ playbook_dir }}/{{ item }}"
+        dest: "{{ project_root }}/{{ item }}"
+      loop:
+        - compose.yaml
+    - name: stop active service
+      environment: "{{ proxy_env }}"
+      shell:
+        cmd: "docker-compose -f compose.yaml stop"
+        chdir: "{{ project_root }}"
+    - name: deploy Docker Compose stack
+      environment: "{{ proxy_env }}"
+      shell:
+        cmd: "docker-compose -f compose.yaml pull && docker-compose -f compose.yaml up -d"
+        chdir: "{{ project_root }}"

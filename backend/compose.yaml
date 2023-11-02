@@ -6,4 +6,7 @@ services:
       - "${DASHBOARDS_PORT}:8080"
     volumes:
       - $DASHBOARDS_HOST_WORK_DIR:/dashboard/dashboards-data
+    environment:
+      - DASHBOARDS_ADMIN_USERNAME=${DASHBOARDS_ADMIN_USERNAME}
+      - DASHBOARDS_ADMIN_PASSWORD=${DASHBOARDS_ADMIN_PASSWORD}
     restart: unless-stopped

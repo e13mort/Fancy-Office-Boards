@@ -8,3 +8,5 @@ package dev.pavel.dashboard
 // names from the application.conf
 const val PROPERTY_DATA_DIR = "ktor.storage.dataDir"
 const val PROPERTY_DB_FILE_NAME = "ktor.storage.dbFileName"
+const val PROPERTY_ADMIN_USERNAME = "ktor.adminBasicAuth.userName"
+const val PROPERTY_ADMIN_PASSWORD = "ktor.adminBasicAuth.password"
