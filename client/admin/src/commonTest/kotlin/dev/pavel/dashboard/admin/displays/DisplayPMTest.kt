@@ -22,6 +22,8 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
+import me.dmdev.premo.saver.PmStateSaver
+import me.dmdev.premo.saver.PmStateSaverFactory
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -74,11 +76,16 @@ class DisplayPMTest {
     private fun createTestPm(description: PmDescription): DisplayPM {
         return DisplayPM(
             PmParams(
-                "test",
                 description,
                 null,
-                TestPMFactory()
-            ) { EmptyPMStateSaver },
+                TestPMFactory(),
+                object : PmStateSaverFactory {
+                    override fun createPmStateSaver(key: String): PmStateSaver = EmptyPMStateSaver
+
+                    override fun deletePmStateSaver(key: String) = Unit
+
+                }
+            ),
             DisplayPMDelegate(
                 updateDisplayInteractor = UpdateDisplayInteractorImpl(
                     MemoryDisplayRepository(),

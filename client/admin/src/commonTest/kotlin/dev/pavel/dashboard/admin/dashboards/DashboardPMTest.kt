@@ -14,6 +14,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
+import me.dmdev.premo.saver.PmStateSaver
+import me.dmdev.premo.saver.PmStateSaverFactory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -173,11 +175,15 @@ class DashboardPMTest {
 
     private fun createTestPm(description: PmDescription) = DashboardPM(
         PmParams(
-            "test",
             description,
             null,
-            TestPMFactory()
-        ) { EmptyPMStateSaver },
+            TestPMFactory(),
+            object : PmStateSaverFactory {
+                override fun createPmStateSaver(key: String): PmStateSaver = EmptyPMStateSaver
+
+                override fun deletePmStateSaver(key: String) = Unit
+            }
+        ),
         DashboardPMDelegate(
             TestUpdateDashboardInteractor(),
             TestCreateDashboardInteractor()
